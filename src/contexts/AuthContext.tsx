@@ -1,0 +1,121 @@
+import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import MockDataService, { Usuario } from '../services/MockDataService';
+import StorageService from '../services/StorageService';
+
+interface AuthContextType {
+  user: Usuario | null;
+  isAuthenticated: boolean;
+  login: (email: string, senha: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  loading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
+  const initializeApp = async () => {
+    try {
+      console.log('AuthContext: Inicializando app...');
+      await MockDataService.initializeDefaultData();
+      console.log('AuthContext: Dados padrão inicializados');
+      await checkAuthState();
+      console.log('AuthContext: Estado de autenticação verificado');
+    } catch (error) {
+      console.error('Erro ao inicializar app:', error);
+    } finally {
+      console.log('AuthContext: Finalizando inicialização, setLoading(false)');
+      setLoading(false);
+    }
+  };
+
+  const checkAuthState = async () => {
+    try {
+      console.log('AuthContext: Verificando estado de autenticação...');
+      const userId = await StorageService.getItem('userId');
+      console.log('AuthContext: userId do Storage:', userId);
+      
+      if (userId) {
+        const userData = MockDataService.getUsuarioById(userId);
+        console.log('AuthContext: userData encontrado:', userData);
+        if (userData) {
+          setUser(userData);
+          console.log('AuthContext: Usuário definido no estado:', userData);
+        } else {
+          console.log('AuthContext: Usuário não encontrado no MockDataService');
+        }
+      } else {
+        console.log('AuthContext: Nenhum userId encontrado no Storage');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar estado de autenticação:', error);
+    }
+  };
+
+  const login = async (email: string, senha: string): Promise<boolean> => {
+    try {
+      console.log('AuthContext: Tentando autenticar usuário:', email);
+      const authenticatedUser = MockDataService.authenticateUser(email, senha);
+      console.log('AuthContext: Usuário autenticado:', authenticatedUser);
+      
+      if (authenticatedUser) {
+        setUser(authenticatedUser);
+        await StorageService.setItem('userId', authenticatedUser.id);
+        await StorageService.setItem('userEmail', authenticatedUser.email);
+        await StorageService.setItem('userPerfil', authenticatedUser.perfil);
+        await StorageService.setItem('empresaId', authenticatedUser.empresaId);
+        console.log('AuthContext: Login bem-sucedido, usuário salvo');
+        return true;
+      }
+      console.log('AuthContext: Falha na autenticação');
+      return false;
+    } catch (error) {
+      console.error('AuthContext: Erro no login:', error);
+      return false;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      setUser(null);
+      await StorageService.removeItem('userId');
+      await StorageService.removeItem('userEmail');
+      await StorageService.removeItem('userPerfil');
+      await StorageService.removeItem('empresaId');
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    loading,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextType {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+  }
+  return context;
+}
