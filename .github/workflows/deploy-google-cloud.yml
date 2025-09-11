@@ -57,11 +57,9 @@ jobs:
         # Fazer upload dos arquivos
         gsutil -m cp -r dist/* gs://$BUCKET_NAME/
         
-        # Configurar bucket para servir site estático
-        gsutil web set -m index.html -e 404.html gs://$BUCKET_NAME
-        
-        # CORS será configurado manualmente se necessário
-        echo "Deploy concluído! CORS pode ser configurado manualmente no console do Google Cloud."
+        # Configurações adicionais serão feitas manualmente no console do Google Cloud
+        echo "Deploy concluído! Arquivos enviados para o bucket."
+        echo "Configure o site estático manualmente no console do Google Cloud."
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
