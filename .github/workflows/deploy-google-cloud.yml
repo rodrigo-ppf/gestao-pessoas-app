@@ -51,13 +51,13 @@ jobs:
         # Usar bucket fixo para teste
         BUCKET_NAME="gestao-pessoas-app-bucket"
         
-        # Verificar se bucket existe, se não existir, criar manualmente
-        echo "Verificando se bucket existe..."
-        gsutil ls gs://$BUCKET_NAME/ || echo "Bucket não existe - será criado manualmente"
+        # Criar bucket se não existir (agora com billing ativado!)
+        echo "Criando bucket se não existir..."
+        gsutil mb -p gestao-pessoas-app-2024 gs://$BUCKET_NAME || echo "Bucket já existe ou erro na criação"
         
-        # Fazer upload dos arquivos (usando projeto correto)
+        # Fazer upload dos arquivos
         echo "Fazendo upload dos arquivos..."
-        gsutil -m cp -r dist/* gs://$BUCKET_NAME/ -p gestao-pessoas-app-2024
+        gsutil -m cp -r dist/* gs://$BUCKET_NAME/
         
         # Configurações adicionais serão feitas manualmente no console do Google Cloud
         echo "Deploy concluído! Arquivos enviados para o bucket."
