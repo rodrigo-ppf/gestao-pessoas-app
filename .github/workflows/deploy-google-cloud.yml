@@ -44,9 +44,13 @@ jobs:
         
     - name: Deploy to Google Cloud Storage
       run: |
+        # Definir projeto correto
+        gcloud config set project gestao-pessoas-app-2024
+        
         # Debug: verificar variáveis
         echo "GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}"
         echo "GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}"
+        echo "Projeto atual: $(gcloud config get-value project)"
         
         # Usar bucket fixo para teste
         BUCKET_NAME="gestao-pessoas-app-bucket"
