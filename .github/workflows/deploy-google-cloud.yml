@@ -17,13 +17,14 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: read
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         repository: rodrigo-ppf/gestao-pessoas-app
-        token: ${{ secrets.PAT_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
       
     - name: Setup Node.js
