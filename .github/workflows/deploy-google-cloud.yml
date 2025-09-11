@@ -44,18 +44,25 @@ jobs:
         
     - name: Deploy to Google Cloud Storage
       run: |
+        # Debug: verificar variáveis
+        echo "GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}"
+        echo "GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}"
+        
+        # Usar bucket fixo para teste
+        BUCKET_NAME="gestao-pessoas-app-bucket"
+        
         # Criar bucket se não existir (usando projeto correto)
-        gsutil mb -p airy-signer-240014 gs://${{ secrets.GCP_BUCKET_NAME }} || true
+        gsutil mb -p airy-signer-240014 gs://$BUCKET_NAME || true
         
         # Fazer upload dos arquivos
-        gsutil -m cp -r dist/* gs://${{ secrets.GCP_BUCKET_NAME }}/
+        gsutil -m cp -r dist/* gs://$BUCKET_NAME/
         
         # Configurar bucket para servir site estático
-        gsutil web set -m index.html -e 404.html gs://${{ secrets.GCP_BUCKET_NAME }}
+        gsutil web set -m index.html -e 404.html gs://$BUCKET_NAME
         
         # Configurar CORS se necessário
         echo '[{"origin": ["*"], "method": ["GET"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]' > cors.json
-        gsutil cors set cors.json gs://${{ secrets.GCP_BUCKET_NAME }}
+        gsutil cors set cors.json gs://$BUCKET_NAME
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
