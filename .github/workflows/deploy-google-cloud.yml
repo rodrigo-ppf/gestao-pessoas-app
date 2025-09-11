@@ -20,11 +20,17 @@ jobs:
       actions: read
     
     steps:
+    - name: Debug secrets
+      run: |
+        echo "PAT_TOKEN exists: ${{ secrets.PAT_TOKEN != '' }}"
+        echo "GCP_SA_KEY exists: ${{ secrets.GCP_SA_KEY != '' }}"
+        echo "GCP_PROJECT_ID exists: ${{ secrets.GCP_PROJECT_ID != '' }}"
+        echo "GCP_BUCKET_NAME exists: ${{ secrets.GCP_BUCKET_NAME != '' }}"
+    
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        repository: rodrigo-ppf/gestao-pessoas-app
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.PAT_TOKEN }}
         fetch-depth: 0
       
     - name: Setup Node.js
