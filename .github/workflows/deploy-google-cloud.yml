@@ -55,12 +55,12 @@ jobs:
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: gestao-pessoas-app-2024
+        project_id: gestao-pessoas-app-2024-471821
         
     - name: Deploy to Google Cloud Storage
       run: |
         # Definir projeto correto
-        gcloud config set project gestao-pessoas-app-2024
+        gcloud config set project gestao-pessoas-app-2024-471821
         
         # Debug: verificar variáveis
         echo "GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}"
