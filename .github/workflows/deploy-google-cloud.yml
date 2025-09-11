@@ -44,8 +44,8 @@ jobs:
         
     - name: Deploy to Google Cloud Storage
       run: |
-        # Criar bucket se não existir
-        gsutil mb -p ${{ secrets.GCP_PROJECT_ID }} gs://${{ secrets.GCP_BUCKET_NAME }} || true
+        # Criar bucket se não existir (usando projeto correto)
+        gsutil mb -p airy-signer-240014 gs://${{ secrets.GCP_BUCKET_NAME }} || true
         
         # Fazer upload dos arquivos
         gsutil -m cp -r dist/* gs://${{ secrets.GCP_BUCKET_NAME }}/
