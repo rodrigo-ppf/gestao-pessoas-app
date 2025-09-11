@@ -55,9 +55,14 @@ jobs:
         # Usar bucket fixo para teste
         BUCKET_NAME="gestao-pessoas-app-bucket"
         
-        # Criar bucket se não existir (agora com billing ativado!)
-        echo "Criando bucket se não existir..."
-        gsutil mb -p gestao-pessoas-app-2024 gs://$BUCKET_NAME || echo "Bucket já existe ou erro na criação"
+        # Verificar se bucket existe
+        echo "Verificando se bucket existe..."
+        if gsutil ls gs://$BUCKET_NAME/ >/dev/null 2>&1; then
+            echo "Bucket já existe, prosseguindo com upload..."
+        else
+            echo "Bucket não existe, criando..."
+            gsutil mb gs://$BUCKET_NAME
+        fi
         
         # Fazer upload dos arquivos
         echo "Fazendo upload dos arquivos..."
