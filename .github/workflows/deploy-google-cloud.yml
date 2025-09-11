@@ -59,28 +59,14 @@ jobs:
         
     - name: Deploy to Google Cloud Storage
       run: |
-        # Definir projeto correto
-        gcloud config set project gestao-pessoas-app-2024-471821
-        
-        # Debug: verificar variáveis
-        echo "GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}"
-        echo "GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}"
-        echo "Projeto atual: $(gcloud config get-value project)"
-        
-        # Usar bucket fixo para teste
+        # Usar bucket fixo
         BUCKET_NAME="gestao-pessoas-app-bucket"
         
-        # Criar bucket (ignorar erro se já existir)
-        echo "Criando bucket..."
-        gsutil mb gs://$BUCKET_NAME || echo "Bucket já existe ou erro na criação"
-        
-        # Fazer upload dos arquivos
+        # Fazer upload dos arquivos diretamente
         echo "Fazendo upload dos arquivos..."
         gsutil -m cp -r dist/* gs://$BUCKET_NAME/
         
-        # Configurações adicionais serão feitas manualmente no console do Google Cloud
         echo "Deploy concluído! Arquivos enviados para o bucket."
-        echo "Configure o site estático manualmente no console do Google Cloud."
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
