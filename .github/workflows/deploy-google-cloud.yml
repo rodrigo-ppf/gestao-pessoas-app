@@ -54,8 +54,8 @@ jobs:
         # Criar bucket se não existir (usando projeto correto)
         gsutil mb -p airy-signer-240014 gs://$BUCKET_NAME || true
         
-        # Fazer upload dos arquivos
-        gsutil -m cp -r dist/* gs://$BUCKET_NAME/
+        # Fazer upload dos arquivos (usando projeto correto)
+        gsutil -m cp -r dist/* gs://$BUCKET_NAME/ -p airy-signer-240014
         
         # Configurações adicionais serão feitas manualmente no console do Google Cloud
         echo "Deploy concluído! Arquivos enviados para o bucket."
