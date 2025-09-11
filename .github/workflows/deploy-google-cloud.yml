@@ -60,9 +60,8 @@ jobs:
         # Configurar bucket para servir site estático
         gsutil web set -m index.html -e 404.html gs://$BUCKET_NAME
         
-        # Configurar CORS se necessário
-        echo '[{"origin": ["*"], "method": ["GET"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]' > cors.json
-        gsutil cors set cors.json gs://$BUCKET_NAME
+        # CORS será configurado manualmente se necessário
+        echo "Deploy concluído! CORS pode ser configurado manualmente no console do Google Cloud."
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
