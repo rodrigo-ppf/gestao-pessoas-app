@@ -27,6 +27,12 @@ app.use(express.static(distPath, {
   etag: true
 }));
 
+// Servir arquivos estáticos da pasta public como fallback
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1d',
+  etag: true
+}));
+
 // Rota de health check
 app.get('/health', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
@@ -52,7 +58,15 @@ app.get('*', (req, res) => {
   if (!fs.existsSync(indexPath)) {
     console.error('❌ index.html não encontrado!');
     
-    // Se não existe index.html, criar uma página temporária
+    // Tentar usar o arquivo public/index.html como fallback
+    const publicIndexPath = path.join(__dirname, 'public', 'index.html');
+    if (fs.existsSync(publicIndexPath)) {
+      console.log('📄 Usando public/index.html como fallback');
+      res.sendFile(publicIndexPath);
+      return;
+    }
+    
+    // Se não existe nem o public/index.html, criar uma página temporária
     const tempHtml = `
       <!DOCTYPE html>
       <html lang="pt-BR">

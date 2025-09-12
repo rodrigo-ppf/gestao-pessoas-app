@@ -107,4 +107,13 @@ cp server.js dist/
 cp package.json dist/
 cp app.yaml dist/
 
+# Copiar pasta public como fallback
+if [ -d "public" ]; then
+    echo "📁 Copiando pasta public como fallback..."
+    cp -r public dist/
+    echo "✅ Pasta public copiada com sucesso"
+else
+    echo "⚠️ Pasta public não encontrada"
+fi
+
 echo "🎉 Build concluído com sucesso!"
