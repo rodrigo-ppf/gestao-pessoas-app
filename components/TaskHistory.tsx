@@ -1,4 +1,5 @@
 import MockDataService, { HistoricoTarefa } from '@/src/services/MockDataService';
+import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Card, Chip, Paragraph, Title } from 'react-native-paper';
 

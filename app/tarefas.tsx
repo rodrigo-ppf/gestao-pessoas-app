@@ -2,7 +2,7 @@ import FloatingMenu from '@/components/FloatingMenu';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, IconButton, Menu, Modal, Paragraph, Portal, Title } from 'react-native-paper';
 

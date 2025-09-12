@@ -4,7 +4,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Modal, Paragraph, Portal, SegmentedButtons, TextInput, Title } from 'react-native-paper';
 

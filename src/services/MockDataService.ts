@@ -1,4 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+// Função para detectar se estamos no ambiente web
+const isWeb = Platform.OS === 'web';
+
+// Função para armazenar dados (compatível com web e mobile)
+const setStorageItem = async (key: string, value: string) => {
+  if (isWeb) {
+    localStorage.setItem(key, value);
+  } else {
+    await AsyncStorage.setItem(key, value);
+  }
+};
+
+// Função para recuperar dados (compatível com web e mobile)
+const getStorageItem = async (key: string): Promise<string | null> => {
+  if (isWeb) {
+    return localStorage.getItem(key);
+  } else {
+    return await AsyncStorage.getItem(key);
+  }
+};
 
 export interface Empresa {
   id: string;
@@ -207,11 +229,11 @@ class MockDataService {
   private async loadData(): Promise<void> {
     try {
       console.log('MockDataService: Carregando dados do AsyncStorage...');
-      const empresasData = await AsyncStorage.getItem('empresas');
-      const usuariosData = await AsyncStorage.getItem('usuarios');
-      const tarefasData = await AsyncStorage.getItem('tarefas');
-      const pontosData = await AsyncStorage.getItem('pontos');
-      const feriasData = await AsyncStorage.getItem('ferias');
+      const empresasData = await getStorageItem('empresas');
+      const usuariosData = await getStorageItem('usuarios');
+      const tarefasData = await getStorageItem('tarefas');
+      const pontosData = await getStorageItem('pontos');
+      const feriasData = await getStorageItem('ferias');
 
       console.log('MockDataService: Dados brutos do AsyncStorage:');
       console.log('empresasData:', empresasData);
@@ -243,12 +265,12 @@ class MockDataService {
       console.log('MockDataService: Empresas para salvar:', this.empresas.length);
       console.log('MockDataService: Usuários para salvar:', this.usuarios.length);
       
-      await AsyncStorage.setItem('empresas', JSON.stringify(this.empresas));
-      await AsyncStorage.setItem('usuarios', JSON.stringify(this.usuarios));
-      await AsyncStorage.setItem('tarefas', JSON.stringify(this.tarefas));
-      await AsyncStorage.setItem('historicoTarefas', JSON.stringify(this.historicoTarefas));
-      await AsyncStorage.setItem('pontos', JSON.stringify(this.pontos));
-      await AsyncStorage.setItem('ferias', JSON.stringify(this.ferias));
+      await setStorageItem('empresas', JSON.stringify(this.empresas));
+      await setStorageItem('usuarios', JSON.stringify(this.usuarios));
+      await setStorageItem('tarefas', JSON.stringify(this.tarefas));
+      await setStorageItem('historicoTarefas', JSON.stringify(this.historicoTarefas));
+      await setStorageItem('pontos', JSON.stringify(this.pontos));
+      await setStorageItem('ferias', JSON.stringify(this.ferias));
       
       console.log('MockDataService: Dados salvos com sucesso no AsyncStorage');
     } catch (error) {
