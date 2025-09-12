@@ -104,7 +104,7 @@ fi
 # Copiar arquivos necessários para o App Engine
 echo "📋 Copiando arquivos para App Engine..."
 cp server.js dist/
-cp package.json dist/
+cp package.prod.json dist/package.json
 cp app.yaml dist/
 
 # Copiar pasta public como fallback
@@ -114,6 +114,20 @@ if [ -d "public" ]; then
     echo "✅ Pasta public copiada com sucesso"
 else
     echo "⚠️ Pasta public não encontrada"
+fi
+
+# Verificar tamanho da pasta dist
+echo "📊 Verificando tamanho da pasta dist..."
+if command -v du >/dev/null 2>&1; then
+    DIST_SIZE=$(du -sh dist/ | cut -f1)
+    echo "📦 Tamanho da pasta dist: $DIST_SIZE"
+    
+    if [ -d "dist/node_modules" ]; then
+        echo "⚠️ AVISO: node_modules encontrado na pasta dist!"
+        echo "📦 Tamanho do node_modules: $(du -sh dist/node_modules | cut -f1)"
+    fi
+else
+    echo "📦 Pasta dist criada (du não disponível para verificar tamanho)"
 fi
 
 echo "🎉 Build concluído com sucesso!"
