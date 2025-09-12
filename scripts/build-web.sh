@@ -103,7 +103,7 @@ fi
 
 # Copiar arquivos necessários para o App Engine
 echo "📋 Copiando arquivos para App Engine..."
-cp server.js dist/
+cp server.minimal.js dist/server.js
 cp package.prod.json dist/package.json
 cp app.yaml dist/
 
