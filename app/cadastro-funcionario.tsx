@@ -213,7 +213,7 @@ export default function CadastroFuncionarioScreen() {
       console.log('Mostrando alert de sucesso...');
       Alert.alert(
         '✅ Sucesso!',
-        `Funcionário ${novoFuncionario.nome} cadastrado com sucesso!\n\nDeseja cadastrar outro funcionário?`,
+        `Colaborador ${novoFuncionario.nome} cadastrado com sucesso!\n\nDeseja cadastrar outro colaborador?`,
         [
           {
             text: 'Voltar ao Menu',
@@ -266,8 +266,8 @@ export default function CadastroFuncionarioScreen() {
     <View style={styles.container}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Cadastrar Funcionário</Title>
-          <Paragraph>Cadastre um novo funcionário e atribua a um líder</Paragraph>
+          <Title>Cadastrar Colaborador</Title>
+          <Paragraph>Cadastre um novo colaborador e atribua a um líder</Paragraph>
         </View>
 
         <Card style={styles.formCard}>
@@ -400,7 +400,7 @@ export default function CadastroFuncionarioScreen() {
                 icon="check"
                 disabled={lideres.length === 0}
               >
-                Cadastrar Funcionário
+                Cadastrar Colaborador
               </Button>
             </View>
           </Card.Content>
@@ -410,7 +410,7 @@ export default function CadastroFuncionarioScreen() {
         <Card style={styles.listCard}>
           <Card.Content>
             <Title style={styles.listTitle}>
-              👷 Funcionários Cadastrados ({funcionarios.length})
+              👷 Colaboradores Cadastrados ({funcionarios.length})
             </Title>
             
             {funcionarios.length === 0 ? (

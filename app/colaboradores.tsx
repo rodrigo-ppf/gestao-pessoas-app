@@ -1,6 +1,7 @@
 import FloatingMenu from '@/components/FloatingMenu';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService, { Usuario } from '@/src/services/MockDataService';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Paragraph, Title } from 'react-native-paper';
@@ -76,7 +77,11 @@ export default function ColaboradoresScreen() {
                   </Paragraph>
                 </Card.Content>
                 <Card.Actions>
-                  <Button mode="outlined" compact>
+                  <Button 
+                    mode="outlined" 
+                    compact
+                    onPress={() => router.push(`/editar-funcionario?funcionarioId=${colaborador.id}`)}
+                  >
                     Editar
                   </Button>
                   <Button mode="contained" compact>

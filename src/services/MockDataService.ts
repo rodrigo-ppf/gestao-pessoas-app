@@ -30,6 +30,19 @@ export interface Usuario {
   equipe?: string[]; // IDs dos funcionários (para líderes)
 }
 
+export interface HistoricoTarefa {
+  id: string;
+  tarefaId: string;
+  usuarioId: string;
+  usuarioNome: string;
+  acao: 'criada' | 'atualizada' | 'status_alterado' | 'responsavel_alterado' | 'prioridade_alterada' | 'prazo_alterado' | 'concluida' | 'cancelada';
+  campo?: string;
+  valorAnterior?: string;
+  valorNovo?: string;
+  dataAlteracao: string;
+  observacoes?: string;
+}
+
 export interface Tarefa {
   id: string;
   titulo: string;
@@ -42,6 +55,7 @@ export interface Tarefa {
   dataCriacao: string;
   dataPrazo?: string;
   dataConclusao?: string;
+  historico?: HistoricoTarefa[];
 }
 
 export interface PontoRegistro {
@@ -71,6 +85,7 @@ class MockDataService {
   private empresas: Empresa[] = [];
   private usuarios: Usuario[] = [];
   private tarefas: Tarefa[] = [];
+  private historicoTarefas: HistoricoTarefa[] = [];
   private pontos: PontoRegistro[] = [];
   private ferias: FeriasSolicitacao[] = [];
 
@@ -212,6 +227,9 @@ class MockDataService {
         console.log('MockDataService: Usuários carregados:', this.usuarios.map(u => ({ id: u.id, nome: u.nome, perfil: u.perfil })));
       }
       if (tarefasData) this.tarefas = JSON.parse(tarefasData);
+      
+      const historicoData = await AsyncStorage.getItem('historicoTarefas');
+      if (historicoData) this.historicoTarefas = JSON.parse(historicoData);
       if (pontosData) this.pontos = JSON.parse(pontosData);
       if (feriasData) this.ferias = JSON.parse(feriasData);
     } catch (error) {
@@ -228,6 +246,7 @@ class MockDataService {
       await AsyncStorage.setItem('empresas', JSON.stringify(this.empresas));
       await AsyncStorage.setItem('usuarios', JSON.stringify(this.usuarios));
       await AsyncStorage.setItem('tarefas', JSON.stringify(this.tarefas));
+      await AsyncStorage.setItem('historicoTarefas', JSON.stringify(this.historicoTarefas));
       await AsyncStorage.setItem('pontos', JSON.stringify(this.pontos));
       await AsyncStorage.setItem('ferias', JSON.stringify(this.ferias));
       
@@ -366,6 +385,18 @@ class MockDataService {
     };
     
     this.tarefas.push(novaTarefa);
+    
+    // Registrar criação no histórico
+    await this.adicionarHistorico(
+      novaTarefa.id,
+      tarefa.criadorId,
+      'criada',
+      undefined,
+      undefined,
+      undefined,
+      `Tarefa "${novaTarefa.titulo}" criada`
+    );
+    
     await this.saveData();
     return novaTarefa;
   }
@@ -385,6 +416,9 @@ class MockDataService {
   public async updateTarefaStatus(tarefaId: string, status: Tarefa['status'], usuarioId?: string): Promise<Tarefa | null> {
     const tarefa = this.tarefas.find(t => t.id === tarefaId);
     if (tarefa) {
+      const statusAnterior = tarefa.status;
+      const responsavelAnterior = tarefa.responsavelId;
+      
       tarefa.status = status;
       if (status === 'Concluída') {
         tarefa.dataConclusao = new Date().toISOString();
@@ -392,10 +426,171 @@ class MockDataService {
       if (usuarioId) {
         tarefa.responsavelId = usuarioId;
       }
+
+      // Registrar alterações no histórico
+      if (statusAnterior !== status) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'status_alterado',
+          'status',
+          statusAnterior,
+          status
+        );
+      }
+
+      if (usuarioId && responsavelAnterior !== usuarioId) {
+        const responsavelAnteriorNome = responsavelAnterior ? this.getUsuarioById(responsavelAnterior)?.nome : 'Não atribuído';
+        const responsavelNovoNome = this.getUsuarioById(usuarioId)?.nome || 'Usuário não encontrado';
+        
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId,
+          'responsavel_alterado',
+          'responsavel',
+          responsavelAnteriorNome,
+          responsavelNovoNome
+        );
+      }
+
       await this.saveData();
       return tarefa;
     }
     return null;
+  }
+
+  public getTarefaById(tarefaId: string): Tarefa | null {
+    return this.tarefas.find(t => t.id === tarefaId) || null;
+  }
+
+  public async updateTarefa(tarefaId: string, dadosAtualizados: Partial<Omit<Tarefa, 'id' | 'dataCriacao'>>, usuarioId?: string): Promise<Tarefa | null> {
+    const tarefa = this.tarefas.find(t => t.id === tarefaId);
+    if (tarefa) {
+      const dadosAnteriores = { ...tarefa };
+      
+      // Registrar alterações específicas no histórico
+      if (dadosAtualizados.titulo && dadosAtualizados.titulo !== tarefa.titulo) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'atualizada',
+          'titulo',
+          tarefa.titulo,
+          dadosAtualizados.titulo
+        );
+      }
+
+      if (dadosAtualizados.descricao && dadosAtualizados.descricao !== tarefa.descricao) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'atualizada',
+          'descricao',
+          tarefa.descricao,
+          dadosAtualizados.descricao
+        );
+      }
+
+      if (dadosAtualizados.prioridade && dadosAtualizados.prioridade !== tarefa.prioridade) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'prioridade_alterada',
+          'prioridade',
+          tarefa.prioridade,
+          dadosAtualizados.prioridade
+        );
+      }
+
+      if (dadosAtualizados.status && dadosAtualizados.status !== tarefa.status) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'status_alterado',
+          'status',
+          tarefa.status,
+          dadosAtualizados.status
+        );
+      }
+
+      if (dadosAtualizados.dataPrazo !== undefined && dadosAtualizados.dataPrazo !== tarefa.dataPrazo) {
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'prazo_alterado',
+          'dataPrazo',
+          tarefa.dataPrazo || 'Não definido',
+          dadosAtualizados.dataPrazo || 'Não definido'
+        );
+      }
+
+      if (dadosAtualizados.responsavelId !== undefined && dadosAtualizados.responsavelId !== tarefa.responsavelId) {
+        const responsavelAnteriorNome = tarefa.responsavelId ? this.getUsuarioById(tarefa.responsavelId)?.nome : 'Não atribuído';
+        const responsavelNovoNome = dadosAtualizados.responsavelId ? this.getUsuarioById(dadosAtualizados.responsavelId)?.nome : 'Não atribuído';
+        
+        await this.adicionarHistorico(
+          tarefaId,
+          usuarioId || tarefa.criadorId,
+          'responsavel_alterado',
+          'responsavel',
+          responsavelAnteriorNome,
+          responsavelNovoNome
+        );
+      }
+
+      Object.assign(tarefa, dadosAtualizados);
+      await this.saveData();
+      return tarefa;
+    }
+    return null;
+  }
+
+  public async deleteTarefa(tarefaId: string): Promise<boolean> {
+    const index = this.tarefas.findIndex(t => t.id === tarefaId);
+    if (index !== -1) {
+      this.tarefas.splice(index, 1);
+      // Remover histórico da tarefa
+      this.historicoTarefas = this.historicoTarefas.filter(h => h.tarefaId !== tarefaId);
+      await this.saveData();
+      return true;
+    }
+    return false;
+  }
+
+  // Métodos para Histórico de Tarefas
+  private async adicionarHistorico(
+    tarefaId: string,
+    usuarioId: string,
+    acao: HistoricoTarefa['acao'],
+    campo?: string,
+    valorAnterior?: string,
+    valorNovo?: string,
+    observacoes?: string
+  ): Promise<void> {
+    const usuario = this.getUsuarioById(usuarioId);
+    if (!usuario) return;
+
+    const historico: HistoricoTarefa = {
+      id: Date.now().toString(),
+      tarefaId,
+      usuarioId,
+      usuarioNome: usuario.nome,
+      acao,
+      campo,
+      valorAnterior,
+      valorNovo,
+      dataAlteracao: new Date().toISOString(),
+      observacoes
+    };
+
+    this.historicoTarefas.push(historico);
+    await this.saveData();
+  }
+
+  public getHistoricoTarefa(tarefaId: string): HistoricoTarefa[] {
+    return this.historicoTarefas
+      .filter(h => h.tarefaId === tarefaId)
+      .sort((a, b) => new Date(b.dataAlteracao).getTime() - new Date(a.dataAlteracao).getTime());
   }
 
   // Métodos para Ponto

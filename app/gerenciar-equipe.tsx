@@ -32,6 +32,9 @@ export default function GerenciarEquipeScreen() {
   const [bulkAssignModalVisible, setBulkAssignModalVisible] = useState(false);
   const [selectedFuncionarios, setSelectedFuncionarios] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [funcionarioMenuVisible, setFuncionarioMenuVisible] = useState<string | null>(null);
+  const [deleteFuncionarioModalVisible, setDeleteFuncionarioModalVisible] = useState(false);
+  const [funcionarioToDelete, setFuncionarioToDelete] = useState<any>(null);
 
   const carregarDados = useCallback(() => {
     if (user?.empresaId) {
@@ -79,7 +82,7 @@ export default function GerenciarEquipeScreen() {
       case 'lider':
         return 'Líder';
       case 'funcionario':
-        return 'Funcionário';
+        return 'Colaborador';
       default:
         return perfil;
     }
@@ -171,7 +174,7 @@ export default function GerenciarEquipeScreen() {
         const lider = lideres.find(l => l.id === liderId);
         Alert.alert(
           '✅ Sucesso!', 
-          `Funcionário ${funcionarioToAssign.nome} associado ao líder ${lider?.nome} com sucesso!`
+          `Colaborador ${funcionarioToAssign.nome} associado ao líder ${lider?.nome} com sucesso!`
         );
       } else {
         Alert.alert('❌ Erro', 'Erro ao associar funcionário ao líder');
@@ -240,6 +243,52 @@ export default function GerenciarEquipeScreen() {
     setBulkAssignModalVisible(false);
   };
 
+  // Funções para funcionários
+  const handleEditarFuncionario = (funcionario: any) => {
+    setFuncionarioMenuVisible(null);
+    router.push(`/editar-funcionario?funcionarioId=${funcionario.id}`);
+  };
+
+  const handleExcluirFuncionario = (funcionario: any) => {
+    console.log('=== ABRINDO MODAL DE EXCLUSÃO DE FUNCIONÁRIO ===');
+    console.log('Funcionário recebido:', funcionario);
+    
+    setFuncionarioToDelete(funcionario);
+    setDeleteFuncionarioModalVisible(true);
+  };
+
+  const confirmarExclusaoFuncionario = async () => {
+    if (!funcionarioToDelete) return;
+    
+    console.log('=== CONFIRMANDO EXCLUSÃO DE FUNCIONÁRIO ===');
+    console.log('Funcionário a ser excluído:', funcionarioToDelete);
+    
+    try {
+      // Excluir o funcionário
+      const sucesso = await MockDataService.deleteUsuario(funcionarioToDelete.id);
+      
+      if (sucesso) {
+        // Recarregar dados
+        carregarDados();
+        setDeleteFuncionarioModalVisible(false);
+        setFuncionarioToDelete(null);
+        
+        // Mostrar sucesso
+        Alert.alert('✅ Sucesso', `Colaborador ${funcionarioToDelete.nome} excluído com sucesso!`);
+      } else {
+        Alert.alert('❌ Erro', 'Erro ao excluir funcionário');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir funcionário:', error);
+      Alert.alert('❌ Erro', 'Erro ao excluir funcionário');
+    }
+  };
+
+  const cancelarExclusaoFuncionario = () => {
+    setDeleteFuncionarioModalVisible(false);
+    setFuncionarioToDelete(null);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
@@ -268,9 +317,9 @@ export default function GerenciarEquipeScreen() {
 
           <Card style={styles.actionCard}>
             <Card.Content>
-              <Title style={styles.actionTitle}>👤 Cadastrar Funcionário</Title>
+              <Title style={styles.actionTitle}>👤 Cadastrar Colaborador</Title>
               <Paragraph style={styles.actionDescription}>
-                Cadastre um novo funcionário e atribua a um líder
+                Cadastre um novo colaborador e atribua a um líder
               </Paragraph>
               <Button
                 mode="contained"
@@ -278,7 +327,7 @@ export default function GerenciarEquipeScreen() {
                 style={styles.actionButton}
                 icon="account-plus"
               >
-                Cadastrar Funcionário
+                Cadastrar Colaborador
               </Button>
             </Card.Content>
           </Card>
@@ -347,7 +396,7 @@ export default function GerenciarEquipeScreen() {
                   
                   <View style={styles.teamSection}>
                     <Paragraph style={styles.teamSectionTitle}>
-                      Funcionários sob liderança ({getFuncionariosDoLider(lider.id).length})
+                      Colaboradores sob liderança ({getFuncionariosDoLider(lider.id).length})
                     </Paragraph>
                     {getFuncionariosDoLider(lider.id).map((funcionario) => (
                       <View key={funcionario.id} style={styles.subordinateItem}>
@@ -382,7 +431,7 @@ export default function GerenciarEquipeScreen() {
 
         <View style={styles.teamContainer}>
           <View style={styles.sectionHeader}>
-            <Title style={styles.sectionTitle}>👤 Funcionários ({funcionarios.length})</Title>
+            <Title style={styles.sectionTitle}>👤 Colaboradores ({funcionarios.length})</Title>
             {!isSelectionMode ? (
               <Button
                 mode="outlined"
@@ -447,12 +496,49 @@ export default function GerenciarEquipeScreen() {
                         {funcionario.cargo} - {funcionario.departamento}
                       </Paragraph>
                     </View>
-                    <Chip
-                      style={[styles.perfilChip, { backgroundColor: getPerfilColor(funcionario.perfil) }]}
-                      textStyle={styles.chipText}
-                    >
-                      {getPerfilLabel(funcionario.perfil)}
-                    </Chip>
+                    <View style={styles.teamMemberActions}>
+                      <Chip
+                        style={[styles.perfilChip, { backgroundColor: getPerfilColor(funcionario.perfil) }]}
+                        textStyle={styles.chipText}
+                      >
+                        {getPerfilLabel(funcionario.perfil)}
+                      </Chip>
+                      {!isSelectionMode && (
+                        <Menu
+                          visible={funcionarioMenuVisible === funcionario.id}
+                          onDismiss={() => setFuncionarioMenuVisible(null)}
+                          anchor={
+                            <IconButton
+                              icon="dots-vertical"
+                              size={20}
+                              onPress={() => setFuncionarioMenuVisible(funcionario.id)}
+                              style={styles.menuButton}
+                            />
+                          }
+                        >
+                          <Menu.Item
+                            onPress={() => handleEditarFuncionario(funcionario)}
+                            title="Editar"
+                            leadingIcon="pencil"
+                          />
+                          <Menu.Item
+                            onPress={() => {
+                              console.log('=== MENU ITEM EXCLUIR FUNCIONÁRIO CLICADO ===');
+                              console.log('Funcionário:', funcionario);
+                              // Fechar menu primeiro
+                              setFuncionarioMenuVisible(null);
+                              // Pequeno delay para garantir que o menu feche
+                              setTimeout(() => {
+                                handleExcluirFuncionario(funcionario);
+                              }, 100);
+                            }}
+                            title="Excluir"
+                            leadingIcon="delete"
+                            titleStyle={{ color: '#f44336' }}
+                          />
+                        </Menu>
+                      )}
+                    </View>
                   </View>
                   
                   {funcionario.liderId ? (
@@ -551,11 +637,11 @@ export default function GerenciarEquipeScreen() {
         >
           <View style={styles.modalContent}>
             <Title style={styles.modalTitle}>
-              Associar Funcionário a Líder
+              Associar Colaborador a Líder
             </Title>
             
             <Paragraph style={styles.modalMessage}>
-              Selecione um líder para o funcionário {funcionarioToAssign?.nome}:
+              Selecione um líder para o colaborador {funcionarioToAssign?.nome}:
             </Paragraph>
             
             <ScrollView style={styles.leadersList}>
@@ -609,11 +695,11 @@ export default function GerenciarEquipeScreen() {
         >
           <View style={styles.modalContent}>
             <Title style={styles.modalTitle}>
-              Associar {selectedFuncionarios.length} Funcionário(s) a um Líder
+              Associar {selectedFuncionarios.length} Colaborador(es) a um Líder
             </Title>
 
             <Paragraph style={styles.modalMessage}>
-              Selecione um líder para associar os funcionários selecionados:
+              Selecione um líder para associar os colaboradores selecionados:
             </Paragraph>
 
             <ScrollView style={styles.leadersList}>
@@ -655,6 +741,48 @@ export default function GerenciarEquipeScreen() {
                 style={styles.modalButton}
               >
                 Cancelar
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
+
+      {/* Modal de Confirmação de Exclusão de Funcionário */}
+      <Portal>
+        <Modal
+          visible={deleteFuncionarioModalVisible}
+          onDismiss={cancelarExclusaoFuncionario}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <View style={styles.modalContent}>
+            <Title style={styles.modalTitle}>
+              Excluir Colaborador
+            </Title>
+            
+            <Paragraph style={styles.modalMessage}>
+              Tem certeza que deseja excluir o colaborador {funcionarioToDelete?.nome}?
+            </Paragraph>
+            
+            <Paragraph style={styles.modalFinal}>
+              Esta ação não pode ser desfeita.
+            </Paragraph>
+            
+            <View style={styles.modalButtons}>
+              <Button
+                mode="outlined"
+                onPress={cancelarExclusaoFuncionario}
+                style={styles.modalButton}
+              >
+                Cancelar
+              </Button>
+              <Button
+                mode="contained"
+                onPress={confirmarExclusaoFuncionario}
+                buttonColor="#f44336"
+                textColor="white"
+                style={styles.modalButton}
+              >
+                Excluir
               </Button>
             </View>
           </View>

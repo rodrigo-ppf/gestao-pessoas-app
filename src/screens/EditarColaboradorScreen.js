@@ -5,6 +5,7 @@ import {
     Card,
     Divider,
     HelperText,
+    Paragraph,
     RadioButton,
     Text,
     TextInput,
@@ -28,6 +29,8 @@ export default function EditarColaboradorScreen({ navigation, route }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -60,12 +63,49 @@ export default function EditarColaboradorScreen({ navigation, route }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      // TODO: Implementar atualização no banco
-      Alert.alert('Sucesso', 'Colaborador atualizado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Simular operação de salvamento (substituir pela implementação real)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // TODO: Implementar atualização no banco de dados real
+      // const colaboradorAtualizado = await ColaboradorService.updateColaborador(colaborador.id, formData);
+      
+      setHasChanges(false);
+      
+      Alert.alert(
+        '✅ Sucesso!',
+        `Colaborador ${formData.nomeUsuario} atualizado com sucesso!`,
+        [
+          {
+            text: 'Continuar Editando',
+            style: 'cancel',
+            onPress: () => setLoading(false)
+          },
+          {
+            text: 'Voltar à Lista',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Erro ao salvar colaborador:', error);
+      Alert.alert(
+        '❌ Erro',
+        'Não foi possível salvar as alterações. Tente novamente.',
+        [
+          {
+            text: 'OK',
+            onPress: () => setLoading(false)
+          }
+        ]
+      );
     }
   };
 
@@ -74,6 +114,41 @@ export default function EditarColaboradorScreen({ navigation, route }) {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+    
+    // Verificar se há alterações
+    const originalValue = colaborador[field] || '';
+    if (value !== originalValue) {
+      setHasChanges(true);
+    } else {
+      // Verificar se ainda há outras alterações
+      const hasOtherChanges = Object.keys(formData).some(key => {
+        if (key === field) return false;
+        return formData[key] !== (colaborador[key] || '');
+      });
+      setHasChanges(hasOtherChanges);
+    }
+  };
+
+  const handleCancel = () => {
+    if (hasChanges) {
+      Alert.alert(
+        '⚠️ Descartar Alterações',
+        'Você tem alterações não salvas.\n\nDeseja realmente descartar e voltar?',
+        [
+          {
+            text: 'Continuar Editando',
+            style: 'cancel'
+          },
+          {
+            text: 'Descartar e Voltar',
+            style: 'destructive',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    } else {
+      navigation.goBack();
+    }
   };
 
   return (
@@ -81,6 +156,14 @@ export default function EditarColaboradorScreen({ navigation, route }) {
       <Card style={styles.card}>
         <Card.Content>
           <Title style={styles.title}>Editar Colaborador</Title>
+          
+          {hasChanges && (
+            <View style={styles.changesIndicator}>
+              <Paragraph style={styles.changesText}>
+                ⚠️ Você tem alterações não salvas
+              </Paragraph>
+            </View>
+          )}
 
           <TextInput
             label="Código do Usuário"
@@ -232,8 +315,10 @@ export default function EditarColaboradorScreen({ navigation, route }) {
           <View style={styles.buttonContainer}>
             <Button
               mode="outlined"
-              onPress={() => navigation.goBack()}
+              onPress={handleCancel}
               style={styles.button}
+              icon="arrow-left"
+              disabled={loading}
             >
               Cancelar
             </Button>
@@ -241,8 +326,11 @@ export default function EditarColaboradorScreen({ navigation, route }) {
               mode="contained"
               onPress={handleSave}
               style={styles.button}
+              loading={loading}
+              disabled={loading}
+              icon="check"
             >
-              Salvar Alterações
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </View>
         </Card.Content>
@@ -264,6 +352,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: '#1976d2',
+  },
+  changesIndicator: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  changesText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
+    margin: 0,
   },
   input: {
     marginBottom: 8,

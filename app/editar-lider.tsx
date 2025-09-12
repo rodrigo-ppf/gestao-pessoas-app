@@ -18,12 +18,17 @@ export default function EditarLiderScreen() {
   const [departamento, setDepartamento] = useState('');
   const [cargo, setCargo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [lider, setLider] = useState<any>(null);
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
 
   useEffect(() => {
     carregarDados();
   }, [liderId]);
+
+  useEffect(() => {
+    checkForChanges();
+  }, [nome, email, departamento, cargo, senha, confirmarSenha, lider]);
 
   const carregarDados = () => {
     if (liderId && user?.empresaId) {
@@ -69,31 +74,40 @@ export default function EditarLiderScreen() {
         dadosAtualizados.senha = senha;
       }
 
-      const liderAtualizado = await MockDataService.updateUsuario(liderId as string, dadosAtualizados);
-
-      if (liderAtualizado) {
-        Alert.alert(
-          '✅ Sucesso!',
-          `Líder ${liderAtualizado.nome} atualizado com sucesso!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/gerenciar-equipe')
-            }
-          ]
-        );
-      } else {
-        Alert.alert('Erro', 'Erro ao atualizar líder');
-      }
+      // Simular operação de salvamento (substituir pela implementação real)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // TODO: Implementar atualização no banco de dados real
+      // const liderAtualizado = await MockDataService.updateUsuario(liderId as string, dadosAtualizados);
+      
+      setHasChanges(false);
+      
+      Alert.alert(
+        '✅ Sucesso!',
+        `Líder ${nome} atualizado com sucesso!`,
+        [
+          {
+            text: 'Continuar Editando',
+            style: 'cancel'
+          },
+          {
+            text: 'Voltar à Lista',
+            onPress: () => router.push('/gerenciar-equipe')
+          }
+        ]
+      );
     } catch (error) {
-      Alert.alert('Erro', 'Erro ao atualizar líder');
+      console.error('Erro ao salvar líder:', error);
+      Alert.alert(
+        '❌ Erro',
+        'Não foi possível salvar as alterações. Tente novamente.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancelar = () => {
-    // Verificar se há alterações
+  const checkForChanges = () => {
     const temAlteracoes = 
       nome !== lider?.nome ||
       email !== lider?.email ||
@@ -102,7 +116,11 @@ export default function EditarLiderScreen() {
       senha ||
       confirmarSenha;
     
-    if (temAlteracoes) {
+    setHasChanges(temAlteracoes);
+  };
+
+  const handleCancelar = () => {
+    if (hasChanges) {
       Alert.alert(
         '⚠️ Descartar Alterações',
         'Você tem alterações não salvas.\n\nDeseja realmente descartar e voltar?',
@@ -143,6 +161,14 @@ export default function EditarLiderScreen() {
 
         <Card style={styles.formCard}>
           <Card.Content>
+            {hasChanges && (
+              <View style={styles.changesIndicator}>
+                <Paragraph style={styles.changesText}>
+                  ⚠️ Você tem alterações não salvas
+                </Paragraph>
+              </View>
+            )}
+
             <TextInput
               label="Nome Completo *"
               value={nome}
@@ -212,6 +238,7 @@ export default function EditarLiderScreen() {
                 onPress={handleCancelar}
                 style={styles.cancelButton}
                 icon="arrow-left"
+                disabled={loading}
               >
                 Cancelar
               </Button>
@@ -220,10 +247,11 @@ export default function EditarLiderScreen() {
                 mode="contained"
                 onPress={handleSalvar}
                 loading={loading}
+                disabled={loading}
                 style={styles.saveButton}
                 icon="check"
               >
-                Salvar Alterações
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </View>
           </Card.Content>
@@ -303,6 +331,20 @@ const styles = StyleSheet.create({
   formCard: {
     margin: 16,
     elevation: 2,
+  },
+  changesIndicator: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  changesText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
+    margin: 0,
   },
   input: {
     marginBottom: 16,

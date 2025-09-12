@@ -1,20 +1,30 @@
 import FloatingMenu from '@/components/FloatingMenu';
+import TaskHistory from '@/components/TaskHistory';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
-import MockDataService from '@/src/services/MockDataService';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import MockDataService, { Tarefa } from '@/src/services/MockDataService';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Modal, Paragraph, Portal, SegmentedButtons, TextInput, Title } from 'react-native-paper';
 
-export default function CriarTarefaScreen() {
+export default function EditarTarefaScreen() {
   const { user } = useAuth();
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [prioridade, setPrioridade] = useState('Média');
-  const [dataPrazo, setDataPrazo] = useState('');
-  const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const { tarefaId } = useLocalSearchParams();
+  
+  const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [tarefa, setTarefa] = useState<Tarefa | null>(null);
+  
+  const [formData, setFormData] = useState({
+    titulo: '',
+    descricao: '',
+    prioridade: 'Média' as 'Baixa' | 'Média' | 'Alta',
+    status: 'Pendente' as 'Pendente' | 'Em Andamento' | 'Concluída' | 'Cancelada',
+    dataPrazo: '',
+    responsavelId: ''
+  });
 
   // Estados para o DatePicker
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -22,81 +32,129 @@ export default function CriarTarefaScreen() {
   const [tempDate, setTempDate] = useState<Date | null>(null);
 
   const usuarios = MockDataService.getUsuariosByEmpresa(user?.empresaId || '');
-  const [responsavelSelecionado, setResponsavelSelecionado] = useState('');
 
-  const handleCriarTarefa = async () => {
-    if (!titulo.trim()) {
-      Alert.alert('❌ Erro', 'Título é obrigatório');
-      return;
+  useEffect(() => {
+    carregarDados();
+  }, [tarefaId]);
+
+  const carregarDados = () => {
+    if (tarefaId && user?.empresaId) {
+      const tarefaEncontrada = MockDataService.getTarefaById(tarefaId as string);
+      if (tarefaEncontrada) {
+        setTarefa(tarefaEncontrada);
+        setFormData({
+          titulo: tarefaEncontrada.titulo,
+          descricao: tarefaEncontrada.descricao,
+          prioridade: tarefaEncontrada.prioridade,
+          status: tarefaEncontrada.status,
+          dataPrazo: tarefaEncontrada.dataPrazo || '',
+          responsavelId: tarefaEncontrada.responsavelId || ''
+        });
+
+        // Converter data de prazo para Date se existir
+        if (tarefaEncontrada.dataPrazo) {
+          const dateParts = tarefaEncontrada.dataPrazo.split('/');
+          if (dateParts.length === 3) {
+            const day = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1; // JavaScript months are 0-indexed
+            const year = parseInt(dateParts[2]);
+            setSelectedDate(new Date(year, month, day));
+          }
+        }
+      }
     }
-    if (!descricao.trim()) {
-      Alert.alert('❌ Erro', 'Descrição é obrigatória');
+  };
+
+  const validateForm = () => {
+    if (!formData.titulo.trim()) {
+      Alert.alert('Erro', 'Título é obrigatório');
+      return false;
+    }
+    if (!formData.descricao.trim()) {
+      Alert.alert('Erro', 'Descrição é obrigatória');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    
+
     try {
       // Simular operação de salvamento
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const novaTarefa = await MockDataService.createTarefa({
-        titulo: titulo.trim(),
-        descricao: descricao.trim(),
-        prioridade: prioridade as 'Baixa' | 'Média' | 'Alta',
-        status: 'Pendente',
-        empresaId: user?.empresaId || '',
-        responsavelId: responsavelSelecionado || undefined,
-        criadorId: user?.id || '',
-        dataPrazo: dataPrazo || undefined
-      });
+      // Atualizar tarefa
+      const tarefaAtualizada = await MockDataService.updateTarefa(tarefaId as string, {
+        titulo: formData.titulo,
+        descricao: formData.descricao,
+        prioridade: formData.prioridade,
+        status: formData.status,
+        dataPrazo: formData.dataPrazo || undefined,
+        responsavelId: formData.responsavelId || undefined
+      }, user?.id);
 
-      Alert.alert(
-        '✅ Sucesso!', 
-        `Tarefa "${novaTarefa.titulo}" criada com sucesso!`,
-        [
-          {
-            text: 'Criar Outra',
-            style: 'cancel',
-            onPress: () => {
-              // Limpar formulário
-              setTitulo('');
-              setDescricao('');
-              setPrioridade('Média');
-              setDataPrazo('');
-              setResponsavelSelecionado('');
-              setSelectedDate(null);
+      if (tarefaAtualizada) {
+        setHasChanges(false);
+        
+        Alert.alert(
+          '✅ Sucesso!',
+          `Tarefa "${formData.titulo}" atualizada com sucesso!`,
+          [
+            {
+              text: 'Continuar Editando',
+              style: 'cancel'
+            },
+            {
+              text: 'Voltar à Lista',
+              onPress: () => router.push('/tarefas')
             }
-          },
-          {
-            text: 'Ver Tarefas',
-            onPress: () => router.push('/tarefas')
-          }
-        ]
-      );
+          ]
+        );
+      } else {
+        Alert.alert('❌ Erro', 'Não foi possível atualizar a tarefa.');
+      }
     } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
-      Alert.alert('❌ Erro', 'Não foi possível criar a tarefa. Tente novamente.');
+      console.error('Erro ao salvar tarefa:', error);
+      Alert.alert('❌ Erro', 'Não foi possível salvar as alterações. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancelar = () => {
-    // Verificar se há dados preenchidos
-    const hasData = titulo.trim() || descricao.trim() || dataPrazo || responsavelSelecionado;
+  const updateFormData = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
     
-    if (hasData) {
+    // Verificar se há alterações
+    const originalValue = tarefa?.[field as keyof Tarefa] || '';
+    if (value !== originalValue) {
+      setHasChanges(true);
+    } else {
+      // Verificar se ainda há outras alterações
+      const hasOtherChanges = Object.keys(formData).some(key => {
+        if (key === field) return false;
+        return (formData as any)[key] !== (tarefa?.[key as keyof Tarefa] || '');
+      });
+      setHasChanges(hasOtherChanges);
+    }
+  };
+
+  const handleCancel = () => {
+    if (hasChanges) {
       Alert.alert(
-        '⚠️ Cancelar Criação',
-        'Você tem dados preenchidos.\n\nDeseja realmente cancelar e perder as informações?',
+        '⚠️ Alterações não salvas',
+        'Você tem alterações não salvas.\n\nDeseja realmente descartar e voltar?',
         [
           {
-            text: 'Continuar Criando',
+            text: 'Continuar Editando',
             style: 'cancel'
           },
           {
-            text: 'Cancelar e Voltar',
+            text: 'Descartar e Voltar',
             style: 'destructive',
             onPress: () => router.push('/tarefas')
           }
@@ -123,7 +181,8 @@ export default function CriarTarefaScreen() {
   const handleDateConfirm = () => {
     if (tempDate) {
       setSelectedDate(tempDate);
-      setDataPrazo(formatDate(tempDate));
+      const formattedDate = formatDate(tempDate);
+      updateFormData('dataPrazo', formattedDate);
     }
     setShowDatePicker(false);
   };
@@ -160,10 +219,6 @@ export default function CriarTarefaScreen() {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
   const getMonthName = (date: Date) => {
     const months = [
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -172,28 +227,46 @@ export default function CriarTarefaScreen() {
     return months[date.getMonth()];
   };
 
+  if (!tarefa) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Title>Carregando...</Title>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Criar Tarefa</Title>
-          <Paragraph>Preencha os dados da nova tarefa</Paragraph>
+          <Title>Editar Tarefa</Title>
+          <Paragraph>Edite as informações da tarefa</Paragraph>
         </View>
 
         <Card style={styles.formCard}>
           <Card.Content>
+            {hasChanges && (
+              <View style={styles.changesIndicator}>
+                <Paragraph style={styles.changesText}>
+                  ⚠️ Você tem alterações não salvas
+                </Paragraph>
+              </View>
+            )}
+
             <TextInput
-              label="Título da Tarefa"
-              value={titulo}
-              onChangeText={setTitulo}
+              label="Título da Tarefa *"
+              value={formData.titulo}
+              onChangeText={(value) => updateFormData('titulo', value)}
               style={styles.input}
               mode="outlined"
             />
-            
+
             <TextInput
-              label="Descrição"
-              value={descricao}
-              onChangeText={setDescricao}
+              label="Descrição *"
+              value={formData.descricao}
+              onChangeText={(value) => updateFormData('descricao', value)}
               style={styles.input}
               mode="outlined"
               multiline
@@ -203,8 +276,8 @@ export default function CriarTarefaScreen() {
             <View style={styles.prioridadeSection}>
               <Paragraph style={styles.sectionTitle}>Prioridade</Paragraph>
               <SegmentedButtons
-                value={prioridade}
-                onValueChange={setPrioridade}
+                value={formData.prioridade}
+                onValueChange={(value) => updateFormData('prioridade', value)}
                 buttons={[
                   { value: 'Baixa', label: 'Baixa' },
                   { value: 'Média', label: 'Média' },
@@ -214,9 +287,24 @@ export default function CriarTarefaScreen() {
               />
             </View>
 
+            <View style={styles.statusSection}>
+              <Paragraph style={styles.sectionTitle}>Status</Paragraph>
+              <SegmentedButtons
+                value={formData.status}
+                onValueChange={(value) => updateFormData('status', value)}
+                buttons={[
+                  { value: 'Pendente', label: 'Pendente' },
+                  { value: 'Em Andamento', label: 'Em Andamento' },
+                  { value: 'Concluída', label: 'Concluída' },
+                  { value: 'Cancelada', label: 'Cancelada' }
+                ]}
+                style={styles.segmentedButtons}
+              />
+            </View>
+
             <TextInput
               label="Data de Prazo (opcional)"
-              value={dataPrazo}
+              value={formData.dataPrazo}
               onPressIn={openDatePicker}
               style={styles.input}
               mode="outlined"
@@ -230,9 +318,9 @@ export default function CriarTarefaScreen() {
               {usuarios.map((usuario) => (
                 <Button
                   key={usuario.id}
-                  mode={responsavelSelecionado === usuario.id ? 'contained' : 'outlined'}
-                  onPress={() => setResponsavelSelecionado(
-                    responsavelSelecionado === usuario.id ? '' : usuario.id
+                  mode={formData.responsavelId === usuario.id ? 'contained' : 'outlined'}
+                  onPress={() => updateFormData('responsavelId', 
+                    formData.responsavelId === usuario.id ? '' : usuario.id
                   )}
                   style={styles.responsavelButton}
                 >
@@ -244,7 +332,7 @@ export default function CriarTarefaScreen() {
             <View style={styles.buttonContainer}>
               <Button
                 mode="outlined"
-                onPress={handleCancelar}
+                onPress={handleCancel}
                 style={styles.cancelButton}
                 icon="arrow-left"
               >
@@ -253,15 +341,22 @@ export default function CriarTarefaScreen() {
               
               <Button
                 mode="contained"
-                onPress={handleCriarTarefa}
+                onPress={handleSave}
                 loading={loading}
                 disabled={loading}
                 style={styles.saveButton}
                 icon="check"
               >
-                {loading ? 'Criando...' : 'Criar Tarefa'}
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </View>
+          </Card.Content>
+        </Card>
+
+        {/* Histórico de Alterações */}
+        <Card style={styles.historyCard}>
+          <Card.Content>
+            <TaskHistory tarefaId={tarefaId as string} />
           </Card.Content>
         </Card>
       </ScrollView>
@@ -386,6 +481,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     flex: 1,
   },
@@ -397,6 +497,20 @@ const styles = StyleSheet.create({
     margin: 16,
     elevation: 2,
   },
+  changesIndicator: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  changesText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
+    margin: 0,
+  },
   input: {
     marginBottom: 16,
   },
@@ -407,6 +521,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   prioridadeSection: {
+    marginBottom: 16,
+  },
+  statusSection: {
     marginBottom: 16,
   },
   segmentedButtons: {
@@ -431,6 +548,11 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 1,
     paddingVertical: 5,
+  },
+  historyCard: {
+    margin: 16,
+    marginTop: 0,
+    elevation: 2,
   },
   // Estilos do DatePicker
   datePickerModal: {

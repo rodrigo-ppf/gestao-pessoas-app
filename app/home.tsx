@@ -2,7 +2,6 @@ import FloatingMenu from '@/components/FloatingMenu';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
-import StorageService from '@/src/services/StorageService';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -21,30 +20,13 @@ export default function HomeScreen() {
   const [hasLideres, setHasLideres] = useState(false);
 
   useEffect(() => {
-    console.log('HomeScreen - useEffect executado');
-    console.log('User:', user);
-    console.log('User perfil:', user?.perfil);
-    console.log('User empresaId:', user?.empresaId);
-    console.log('User é null?', user === null);
-    console.log('User é undefined?', user === undefined);
-    
     if (user?.empresaId) {
       const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-      console.log('Usuários da empresa:', usuarios);
-      
       const funcionarios = usuarios.filter(u => u.perfil === 'funcionario');
       const lideres = usuarios.filter(u => u.perfil === 'lider');
       
-      console.log('Funcionários encontrados:', funcionarios);
-      console.log('Líderes encontrados:', lideres);
-      
       setHasFuncionarios(funcionarios.length > 0);
       setHasLideres(lideres.length > 0);
-      
-      console.log('hasFuncionarios:', funcionarios.length > 0);
-      console.log('hasLideres:', lideres.length > 0);
-    } else {
-      console.log('Usuário não tem empresaId ou é null/undefined');
     }
   }, [user]);
 
@@ -118,7 +100,7 @@ export default function HomeScreen() {
       icon: 'clock',
       onPress: () => router.push('/registrar-ponto'),
       show: true
-    },
+      },
   ].filter(item => item.show);
 
   return (
@@ -163,205 +145,8 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Botão de teste para debug */}
-        <View style={styles.debugSection}>
-          <Button
-            mode="outlined"
-            onPress={() => {
-              console.log('=== DEBUG INFO ===');
-              console.log('User:', user);
-              console.log('User perfil:', user?.perfil);
-              console.log('hasFuncionarios:', hasFuncionarios);
-              console.log('hasLideres:', hasLideres);
-              console.log('Condição dono_empresa:', user?.perfil === 'dono_empresa');
-              console.log('Condição !hasFuncionarios:', !hasFuncionarios);
-              console.log('Condição completa:', user?.perfil === 'dono_empresa' && !hasFuncionarios);
-            }}
-            style={styles.debugButton}
-          >
-            Debug Info
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== TESTE LOGIN DONO_EMPRESA ===');
-              try {
-                const success = await login('dono@empresa.com', '123456');
-                console.log('Login resultado:', success);
-                if (success) {
-                  console.log('Login bem-sucedido! Recarregando página...');
-                  // Forçar recarregamento da página
-                  window.location.reload();
-                }
-              } catch (error) {
-                console.error('Erro no login de teste:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#4caf50', marginTop: 8 }]}
-          >
-            Teste Login Dono Empresa
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== RESETANDO DADOS ===');
-              try {
-                await MockDataService.resetData();
-                console.log('Dados resetados! Recarregando página...');
-                window.location.reload();
-              } catch (error) {
-                console.error('Erro ao resetar dados:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#ff9800', marginTop: 8 }]}
-          >
-            Resetar Dados
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== FORÇANDO INICIALIZAÇÃO ===');
-              try {
-                console.log('Forçando inicialização dos dados padrão...');
-                await MockDataService.initializeDefaultData();
-                console.log('Inicialização forçada concluída!');
-                
-                // Verificar se os usuários foram criados
-                const usuarios = MockDataService.getUsuarios();
-                console.log('Usuários após inicialização:', usuarios);
-                
-                const donoEmpresa = usuarios.find(u => u.perfil === 'dono_empresa');
-                console.log('Dono empresa encontrado:', donoEmpresa);
-              } catch (error) {
-                console.error('Erro ao forçar inicialização:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#795548', marginTop: 8 }]}
-          >
-            Forçar Inicialização
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== VERIFICANDO STORAGE ===');
-              try {
-                const userId = await StorageService.getItem('userId');
-                const userEmail = await StorageService.getItem('userEmail');
-                const userPerfil = await StorageService.getItem('userPerfil');
-                const empresaId = await StorageService.getItem('empresaId');
-                
-                console.log('Storage userId:', userId);
-                console.log('Storage userEmail:', userEmail);
-                console.log('Storage userPerfil:', userPerfil);
-                console.log('Storage empresaId:', empresaId);
-                
-                if (userId) {
-                  const userData = MockDataService.getUsuarioById(userId);
-                  console.log('Usuário encontrado no MockDataService:', userData);
-                }
-              } catch (error) {
-                console.error('Erro ao verificar Storage:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#9c27b0', marginTop: 8 }]}
-          >
-            Verificar Storage
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== VERIFICANDO USUÁRIOS ===');
-              try {
-                const todosUsuarios = MockDataService.getUsuarios();
-                console.log('Todos os usuários:', todosUsuarios);
-                
-                const donoEmpresa = todosUsuarios.find(u => u.perfil === 'dono_empresa');
-                console.log('Usuário dono_empresa encontrado:', donoEmpresa);
-                
-                const adminSistema = todosUsuarios.find(u => u.perfil === 'admin_sistema');
-                console.log('Usuário admin_sistema encontrado:', adminSistema);
-              } catch (error) {
-                console.error('Erro ao verificar usuários:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#607d8b', marginTop: 8 }]}
-          >
-            Verificar Usuários
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={async () => {
-              console.log('=== FORÇANDO LOGIN E SALVANDO ===');
-              try {
-                // Buscar usuário dono_empresa
-                const donoEmpresa = MockDataService.getUsuarios().find(u => u.perfil === 'dono_empresa');
-                console.log('Usuário dono_empresa encontrado:', donoEmpresa);
-                
-                if (donoEmpresa) {
-                  // Salvar no Storage
-                  await StorageService.setItem('userId', donoEmpresa.id);
-                  await StorageService.setItem('userEmail', donoEmpresa.email);
-                  await StorageService.setItem('userPerfil', donoEmpresa.perfil);
-                  await StorageService.setItem('empresaId', donoEmpresa.empresaId);
-                  
-                  console.log('Dados salvos no Storage');
-                  
-                  // Fazer login
-                  const success = await login(donoEmpresa.email, donoEmpresa.senha);
-                  console.log('Login forçado resultado:', success);
-                  
-                  if (success) {
-                    console.log('Login bem-sucedido! Recarregando página...');
-                    window.location.reload();
-                  }
-                } else {
-                  console.log('Usuário dono_empresa não encontrado!');
-                }
-              } catch (error) {
-                console.error('Erro ao forçar login:', error);
-              }
-            }}
-            style={[styles.debugButton, { backgroundColor: '#e91e63', marginTop: 8 }]}
-          >
-            Forçar Login Dono
-          </Button>
-          
-          <Button
-            mode="contained"
-            onPress={() => {
-              console.log('=== TESTE FORÇAR SEÇÃO ESPECIAL ===');
-              console.log('Forçando hasFuncionarios para false...');
-              setHasFuncionarios(false);
-              setHasLideres(false);
-              console.log('hasFuncionarios definido como false');
-              console.log('hasLideres definido como false');
-            }}
-            style={[styles.debugButton, { backgroundColor: '#3f51b5', marginTop: 8 }]}
-          >
-            Forçar Seção Especial
-          </Button>
-        </View>
 
         {/* Seção especial para dono da empresa sem funcionários */}
-        {(() => {
-          console.log('=== VERIFICANDO CONDIÇÃO DA SEÇÃO ESPECIAL ===');
-          console.log('user:', user);
-          console.log('user?.perfil:', user?.perfil);
-          console.log('hasFuncionarios:', hasFuncionarios);
-          console.log('hasLideres:', hasLideres);
-          console.log('Condição user?.perfil === "dono_empresa":', user?.perfil === 'dono_empresa');
-          console.log('Condição !hasFuncionarios:', !hasFuncionarios);
-          console.log('Condição completa:', user?.perfil === 'dono_empresa' && !hasFuncionarios);
-          console.log('Tipo de user?.perfil:', typeof user?.perfil);
-          console.log('Comparação exata:', user?.perfil === 'dono_empresa');
-          return null;
-        })()}
         {user?.perfil === 'dono_empresa' && !hasFuncionarios && (
           <View style={styles.welcomeSection}>
             <Card style={styles.welcomeCard}>
@@ -392,7 +177,7 @@ export default function HomeScreen() {
                   >
                     Cadastrar Funcionário
                   </Button>
-                </View>
+        </View>
                 
                 {!hasLideres && (
                   <Paragraph style={styles.helpText}>
@@ -470,12 +255,6 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     alignSelf: 'flex-end',
-  },
-  debugSection: {
-    padding: 16,
-  },
-  debugButton: {
-    backgroundColor: '#ff5722',
   },
   welcomeSection: {
     padding: 16,
