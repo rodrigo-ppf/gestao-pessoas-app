@@ -140,19 +140,24 @@
     <script>
         // Atualizar informações do sistema
         fetch('/health')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 document.getElementById('system-info').innerHTML = `
                     <strong>Uptime:</strong> ${Math.round(data.uptime)}s<br>
-                    <strong>Pasta dist:</strong> ${data.distPath}<br>
-                    <strong>index.html existe:</strong> ${data.indexExists ? 'Sim' : 'Não'}<br>
-                    <strong>Arquivos:</strong> ${data.distFiles.length} arquivos
+                    <strong>Status:</strong> ${data.status}<br>
+                    <strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString('pt-BR')}
                 `;
             })
             .catch(error => {
                 document.getElementById('system-info').innerHTML = `
-                    <strong>Erro:</strong> Não foi possível carregar informações<br>
-                    <small>${error.message}</small>
+                    <strong>Status:</strong> Servidor funcionando<br>
+                    <strong>Erro API:</strong> ${error.message}<br>
+                    <small>O servidor está rodando, mas a API de health check não está disponível</small>
                 `;
             });
         
