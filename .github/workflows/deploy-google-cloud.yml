@@ -45,10 +45,18 @@ jobs:
     - name: Build project
       run: |
         # Para React Native/Expo, vamos fazer build para web
-        npm run build:production
+        echo "Iniciando build para web..."
+        npx expo export --platform web --clear
         
         # Verificar se o build foi criado
+        echo "Verificando arquivos gerados..."
         ls -la dist/
+        
+        # Copiar arquivos necessários para o App Engine
+        cp server.js dist/
+        cp package.json dist/
+        cp app.yaml dist/
+        
         echo "Build concluído!"
         
     - name: Authenticate to Google Cloud
@@ -61,18 +69,15 @@ jobs:
       with:
         project_id: gestao-pessoas-app-2024-471821
         
-    - name: Deploy to Firebase Hosting
+    - name: Deploy to Google App Engine
       run: |
-        # Instalar Firebase CLI
-        npm install -g firebase-tools
+        # Navegar para a pasta dist
+        cd dist
         
-        # Fazer login com token
-        echo '${{ secrets.FIREBASE_TOKEN }}' | firebase login:ci
+        # Deploy para App Engine
+        gcloud app deploy --project=gestao-pessoas-app-2024-471821 --quiet
         
-        # Deploy para Firebase Hosting
-        firebase deploy --project gestao-pessoas-app-2024-471821 --only hosting
-        
-        echo "Deploy concluído! Aplicação disponível em Firebase Hosting."
+        echo "Deploy concluído! Aplicação disponível no Google App Engine."
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
@@ -105,6 +110,6 @@ jobs:
     - name: Notify deployment success
       run: |
         echo "✅ Deploy realizado com sucesso!"
-        echo "🌐 URL: https://gestao-pessoas-app-2024-471821.web.app"
+        echo "🌐 URL: https://gestao-pessoas-app-2024-471821.uc.r.appspot.com"
         echo "📦 Commit: ${{ github.sha }}"
         echo "👤 Autor: ${{ github.actor }}"

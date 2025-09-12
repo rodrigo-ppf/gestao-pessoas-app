@@ -10,6 +10,12 @@ module.exports = async function (env, argv) {
     'react-native$': 'react-native-web',
   };
   
+  // Configurações para resolver arquivos CSS
+  config.module.rules.push({
+    test: /\.css$/,
+    use: ['style-loader', 'css-loader'],
+  });
+  
   // Configurações para melhor compatibilidade com web
   config.module.rules.push({
     test: /\.(js|jsx|ts|tsx)$/,
@@ -25,6 +31,13 @@ module.exports = async function (env, argv) {
       },
     },
   });
+  
+  // Configurações para ignorar arquivos CSS problemáticos
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    fs: false,
+    path: false,
+  };
   
   return config;
 };
