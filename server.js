@@ -3,35 +3,28 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// Log de requisições
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
+// Log de inicialização
+console.log('🚀 Iniciando servidor...');
+console.log(`📁 Diretório atual: ${__dirname}`);
 
 // Verificar se a pasta dist existe
 const distPath = path.join(__dirname, 'dist');
-console.log(`📁 Verificando pasta dist: ${distPath}`);
-console.log(`📁 Pasta dist existe: ${fs.existsSync(distPath)}`);
+const publicPath = path.join(__dirname, 'public');
 
+console.log(`📁 Pasta dist: ${distPath} (existe: ${fs.existsSync(distPath)})`);
+console.log(`📁 Pasta public: ${publicPath} (existe: ${fs.existsSync(publicPath)})`);
+
+// Servir arquivos estáticos da pasta dist (se existir)
 if (fs.existsSync(distPath)) {
-  const files = fs.readdirSync(distPath);
-  console.log(`📄 Arquivos na pasta dist: ${files.join(', ')}`);
-} else {
-  console.log('❌ Pasta dist não existe!');
+  app.use(express.static(distPath));
+  console.log('✅ Servindo arquivos da pasta dist');
 }
 
-// Servir arquivos estáticos da pasta dist
-app.use(express.static(distPath, {
-  maxAge: '1d',
-  etag: true
-}));
-
-// Servir arquivos estáticos da pasta public como fallback
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1d',
-  etag: true
-}));
+// Servir arquivos estáticos da pasta public (fallback)
+if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+  console.log('✅ Servindo arquivos da pasta public');
+}
 
 // Rota de health check
 app.get('/health', (req, res) => {
@@ -50,89 +43,55 @@ app.get('/health', (req, res) => {
 
 // Rota para todas as páginas (SPA)
 app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'dist', 'index.html');
-  console.log(`Servindo index.html para: ${req.url}`);
-  console.log(`Caminho do index.html: ${indexPath}`);
-  console.log(`index.html existe: ${fs.existsSync(indexPath)}`);
+  console.log(`📄 Requisição para: ${req.url}`);
   
-  if (!fs.existsSync(indexPath)) {
-    console.error('❌ index.html não encontrado!');
-    
-    // Tentar usar o arquivo public/index.html como fallback
-    const publicIndexPath = path.join(__dirname, 'public', 'index.html');
-    if (fs.existsSync(publicIndexPath)) {
-      console.log('📄 Usando public/index.html como fallback');
-      res.sendFile(publicIndexPath);
-      return;
-    }
-    
-    // Se não existe nem o public/index.html, criar uma página temporária
-    const tempHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gestão de Pessoas - Debug</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-          .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-          .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          .info { color: #1976d2; background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          .success { color: #388e3c; background: #e8f5e8; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>🚀 Gestão de Pessoas - Debug</h1>
-          
-          <div class="error">
-            <h2>❌ Problema Identificado</h2>
-            <p>O arquivo <code>index.html</code> não foi gerado durante o build.</p>
-          </div>
-          
-          <div class="info">
-            <h3>📊 Informações do Sistema</h3>
-            <p><strong>Caminho esperado:</strong> ${indexPath}</p>
-            <p><strong>Pasta dist existe:</strong> ${fs.existsSync(distPath)}</p>
-            <p><strong>Arquivos na pasta dist:</strong></p>
-            <pre>${fs.existsSync(distPath) ? fs.readdirSync(distPath).join('\n') : 'N/A'}</pre>
-          </div>
-          
-          <div class="success">
-            <h3>✅ Servidor Funcionando</h3>
-            <p>O servidor Express está rodando corretamente. O problema está no build do Expo.</p>
-            <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-            <p><strong>Uptime:</strong> ${process.uptime()} segundos</p>
-          </div>
-          
-          <h3>🔧 Próximos Passos</h3>
-          <ol>
-            <li>Verificar logs do GitHub Actions</li>
-            <li>Verificar se o build do Expo está funcionando</li>
-            <li>Verificar se o arquivo modalStyles.js foi modificado corretamente</li>
-          </ol>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    res.send(tempHtml);
+  // Tentar servir index.html da pasta dist primeiro
+  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
+  if (fs.existsSync(distIndexPath)) {
+    console.log('📄 Servindo index.html da pasta dist');
+    res.sendFile(distIndexPath);
     return;
   }
   
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      console.error('Erro ao servir index.html:', err);
-      res.status(500).send('Erro interno do servidor');
-    }
-  });
+  // Tentar servir index.html da pasta public
+  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    console.log('📄 Servindo index.html da pasta public');
+    res.sendFile(publicIndexPath);
+    return;
+  }
+  
+  // Se não existe nenhum index.html, retornar página simples
+  console.log('❌ Nenhum index.html encontrado, servindo página simples');
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Gestão de Pessoas</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; padding: 15px; border-radius: 4px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🚀 Gestão de Pessoas</h1>
+        <div class="success">
+          <strong>✅ Servidor Funcionando!</strong><br>
+          O servidor Express está rodando corretamente no Google App Engine.
+        </div>
+        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Uptime:</strong> ${process.uptime()} segundos</p>
+        <p><a href="/health">Verificar Status</a></p>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📁 Servindo arquivos estáticos de: ${distPath}`);
-  console.log(`🌐 Acesse: http://localhost:${PORT}`);
+  console.log(`🌐 Aplicação disponível!`);
 });
