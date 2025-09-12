@@ -3,7 +3,7 @@ env: standard
 
 handlers:
 - url: /.*
-  script: auto
+  script: server.js
   secure: always
   
 automatic_scaling:

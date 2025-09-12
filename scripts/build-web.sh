@@ -24,6 +24,25 @@ if [ -d "dist" ]; then
     echo "✅ Build criado com sucesso"
     echo "📊 Conteúdo da pasta dist:"
     ls -la dist/
+    
+    # Verificar se index.html existe
+    if [ -f "dist/index.html" ]; then
+        echo "✅ index.html encontrado"
+        echo "📄 Primeiras linhas do index.html:"
+        head -10 dist/index.html
+    else
+        echo "❌ index.html não encontrado!"
+        exit 1
+    fi
+    
+    # Verificar se há arquivos JS
+    if [ -d "dist/_expo/static/js" ]; then
+        echo "✅ Arquivos JS encontrados"
+        ls -la dist/_expo/static/js/ | head -5
+    else
+        echo "⚠️ Pasta de JS não encontrada"
+    fi
+    
 else
     echo "❌ Erro ao criar build"
     exit 1
