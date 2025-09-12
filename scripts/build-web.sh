@@ -30,9 +30,47 @@ else
     exit 1
 fi
 
+# Modificar diretamente o arquivo modalStyles.js para resolver o problema
+echo "🔧 Modificando arquivo modalStyles.js..."
+MODAL_STYLES_FILE="node_modules/expo-router/build/modal/web/modalStyles.js"
+if [ -f "$MODAL_STYLES_FILE" ]; then
+    echo "📄 Arquivo modalStyles.js encontrado, modificando..."
+    # Backup do arquivo original
+    cp "$MODAL_STYLES_FILE" "$MODAL_STYLES_FILE.backup"
+    
+    # Substituir a linha problemática
+    sed -i 's/const modal_module_css_1 = __importDefault(require("..\/..\/..\/assets\/modal.module.css"));/const modal_module_css_1 = { default: {} };/' "$MODAL_STYLES_FILE"
+    
+    echo "✅ Arquivo modalStyles.js modificado com sucesso"
+    echo "📄 Conteúdo modificado:"
+    head -10 "$MODAL_STYLES_FILE"
+else
+    echo "⚠️ Arquivo modalStyles.js não encontrado, será criado durante o build"
+fi
+
 # Build para web
 echo "🚀 Iniciando build para web..."
 npx expo export --platform web --clear
+
+# Verificar se o arquivo modalStyles.js foi criado durante o build e modificá-lo
+echo "🔧 Verificando arquivo modalStyles.js pós-build..."
+MODAL_STYLES_FILE="node_modules/expo-router/build/modal/web/modalStyles.js"
+if [ -f "$MODAL_STYLES_FILE" ]; then
+    echo "📄 Arquivo modalStyles.js encontrado pós-build, modificando..."
+    # Backup do arquivo original
+    cp "$MODAL_STYLES_FILE" "$MODAL_STYLES_FILE.backup"
+    
+    # Substituir a linha problemática
+    sed -i 's/const modal_module_css_1 = __importDefault(require("..\/..\/..\/assets\/modal.module.css"));/const modal_module_css_1 = { default: {} };/' "$MODAL_STYLES_FILE"
+    
+    echo "✅ Arquivo modalStyles.js modificado pós-build"
+    echo "📄 Conteúdo modificado:"
+    head -10 "$MODAL_STYLES_FILE"
+    
+    # Tentar o build novamente
+    echo "🔄 Tentando build novamente após modificação..."
+    npx expo export --platform web --clear
+fi
 
 # Verificar se o build foi criado
 if [ -d "dist" ]; then
