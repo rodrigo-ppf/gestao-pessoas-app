@@ -10,8 +10,23 @@ echo "/* Arquivo CSS vazio para resolver problema do expo-router */" > node_modu
 # Verificar se o arquivo foi criado
 if [ -f "node_modules/expo-router/assets/modal.module.css" ]; then
     echo "✅ Arquivo CSS criado com sucesso"
+    echo "📄 Conteúdo do arquivo CSS:"
+    cat node_modules/expo-router/assets/modal.module.css
 else
     echo "❌ Erro ao criar arquivo CSS"
+    exit 1
+fi
+
+# Criar também o arquivo no caminho alternativo
+echo "📁 Criando arquivo CSS no caminho alternativo..."
+mkdir -p node_modules/expo-router/build/modal/web
+echo "/* Arquivo CSS vazio para resolver problema do expo-router */" > node_modules/expo-router/build/modal/web/modal.module.css
+
+# Verificar se ambos os arquivos foram criados
+if [ -f "node_modules/expo-router/build/modal/web/modal.module.css" ]; then
+    echo "✅ Arquivo CSS alternativo criado com sucesso"
+else
+    echo "❌ Erro ao criar arquivo CSS alternativo"
     exit 1
 fi
 

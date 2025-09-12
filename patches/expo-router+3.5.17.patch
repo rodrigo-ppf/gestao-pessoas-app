@@ -1,0 +1,11 @@
+diff --git a/node_modules/expo-router/build/modal/web/modalStyles.js b/node_modules/expo-router/build/modal/web/modalStyles.js
+index 1234567..abcdefg 100644
+--- a/node_modules/expo-router/build/modal/web/modalStyles.js
++++ b/node_modules/expo-router/build/modal/web/modalStyles.js
+@@ -1,6 +1,6 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+-const modal_module_css_1 = __importDefault(require("../../../assets/modal.module.css"));
++const modal_module_css_1 = { default: {} };
+ exports.default = modal_module_css_1.default;
+ //# sourceMappingURL=modalStyles.js.map
