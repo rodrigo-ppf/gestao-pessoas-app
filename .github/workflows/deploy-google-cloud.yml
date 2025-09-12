@@ -45,7 +45,11 @@ jobs:
     - name: Build project
       run: |
         # Para React Native/Expo, vamos fazer build para web
-        npx expo export --platform web
+        npm run build:production
+        
+        # Verificar se o build foi criado
+        ls -la dist/
+        echo "Build concluído!"
         
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
@@ -57,16 +61,18 @@ jobs:
       with:
         project_id: gestao-pessoas-app-2024-471821
         
-    - name: Deploy to Google Cloud Storage
+    - name: Deploy to Firebase Hosting
       run: |
-        # Usar bucket fixo
-        BUCKET_NAME="gestao-pessoas-app-bucket"
+        # Instalar Firebase CLI
+        npm install -g firebase-tools
         
-        # Fazer upload dos arquivos diretamente
-        echo "Fazendo upload dos arquivos..."
-        gsutil -m cp -r dist/* gs://$BUCKET_NAME/
+        # Fazer login com token
+        echo '${{ secrets.FIREBASE_TOKEN }}' | firebase login:ci
         
-        echo "Deploy concluído! Arquivos enviados para o bucket."
+        # Deploy para Firebase Hosting
+        firebase deploy --project gestao-pessoas-app-2024-471821 --only hosting
+        
+        echo "Deploy concluído! Aplicação disponível em Firebase Hosting."
         
     - name: Deploy to Google Cloud Run (Alternativa)
       if: false  # Desabilitado por padrão, habilite se preferir Cloud Run
@@ -99,6 +105,6 @@ jobs:
     - name: Notify deployment success
       run: |
         echo "✅ Deploy realizado com sucesso!"
-        echo "🌐 URL: https://storage.googleapis.com/${{ secrets.GCP_BUCKET_NAME }}/index.html"
+        echo "🌐 URL: https://gestao-pessoas-app-2024-471821.web.app"
         echo "📦 Commit: ${{ github.sha }}"
         echo "👤 Autor: ${{ github.actor }}"

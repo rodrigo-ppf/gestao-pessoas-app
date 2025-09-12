@@ -25,7 +25,8 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png",
       "bundler": "webpack",
-      "config": "./web.config.js"
+      "config": "./web.config.js",
+      "baseUrl": "/"
     },
     "plugins": [
       "expo-router",
