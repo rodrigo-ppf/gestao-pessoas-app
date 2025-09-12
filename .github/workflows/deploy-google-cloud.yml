@@ -44,20 +44,9 @@ jobs:
       
     - name: Build project
       run: |
-        # Para React Native/Expo, vamos fazer build para web
-        echo "Iniciando build para web..."
-        npx expo export --platform web --clear
-        
-        # Verificar se o build foi criado
-        echo "Verificando arquivos gerados..."
-        ls -la dist/
-        
-        # Copiar arquivos necessários para o App Engine
-        cp server.js dist/
-        cp package.json dist/
-        cp app.yaml dist/
-        
-        echo "Build concluído!"
+        # Executar script de build
+        chmod +x scripts/build-web.sh
+        ./scripts/build-web.sh
         
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
