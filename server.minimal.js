@@ -44,6 +44,10 @@ app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   const publicIndexPath = path.join(__dirname, 'public', 'index.html');
   
+  console.log(`🔍 Verificando arquivos:`);
+  console.log(`   - index.html do build: ${indexPath} - Existe: ${fs.existsSync(indexPath)}`);
+  console.log(`   - index.html da public: ${publicIndexPath} - Existe: ${fs.existsSync(publicIndexPath)}`);
+  
   // Verificar se existe o index.html do build do Expo
   if (fs.existsSync(indexPath)) {
     console.log('✅ Servindo index.html do build Expo para rota SPA:', req.url);
@@ -78,6 +82,20 @@ app.listen(PORT, () => {
   console.log(`🏥 Health check disponível em: http://localhost:${PORT}/health`);
   console.log(`📁 Servindo arquivos de: ${__dirname}`);
   console.log(`📄 index.html existe: ${fs.existsSync(path.join(__dirname, 'index.html'))}`);
+  
+  // Listar arquivos na pasta dist
+  try {
+    const files = fs.readdirSync(__dirname);
+    console.log(`📋 Arquivos na pasta dist:`, files);
+    
+    // Verificar se há arquivos JS/CSS
+    const jsFiles = files.filter(f => f.endsWith('.js'));
+    const cssFiles = files.filter(f => f.endsWith('.css'));
+    console.log(`📄 Arquivos JS encontrados:`, jsFiles);
+    console.log(`🎨 Arquivos CSS encontrados:`, cssFiles);
+  } catch (error) {
+    console.error('❌ Erro ao listar arquivos:', error);
+  }
 });
 
 // Tratamento de erros

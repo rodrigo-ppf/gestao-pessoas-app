@@ -41,6 +41,8 @@ if [ -d "dist" ]; then
     # Verificar se index.html existe
     if [ -f "dist/index.html" ]; then
         echo "✅ index.html encontrado"
+        echo "📄 Primeiras linhas do index.html:"
+        head -10 dist/index.html
     else
         echo "❌ index.html não encontrado!"
         exit 1
