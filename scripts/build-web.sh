@@ -69,7 +69,7 @@ if [ -f "$MODAL_STYLES_FILE" ]; then
     
     # Tentar o build novamente
     echo "🔄 Tentando build novamente após modificação..."
-    npx @expo/cli export --platform web --clear
+    npx expo export --platform web --clear
 fi
 
 # Verificar se o build foi criado
