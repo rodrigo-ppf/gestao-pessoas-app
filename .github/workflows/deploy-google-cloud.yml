@@ -43,7 +43,7 @@ jobs:
       run: |
         # Usar o package.json de desenvolvimento para instalar dependências
         cp package.dev.json package.json
-        npm install
+        npm install --legacy-peer-deps
       
     - name: Build project
       run: |
