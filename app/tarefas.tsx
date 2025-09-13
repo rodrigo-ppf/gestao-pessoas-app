@@ -1,13 +1,15 @@
 import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, IconButton, Menu, Modal, Paragraph, Portal, Title } from 'react-native-paper';
 
 export default function TarefasScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [tarefasFiltradas, setTarefasFiltradas] = useState<Tarefa[]>([]);
   const [menuVisible, setMenuVisible] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export default function TarefasScreen() {
       const tarefaAtualizada = await MockDataService.updateTarefaStatus(tarefaId, 'Em Andamento', user?.id);
       if (tarefaAtualizada) {
         Alert.alert('✅ Sucesso', `Tarefa "${tarefaAtualizada.titulo}" iniciada com sucesso!`);
-        loadTarefas();
+      loadTarefas();
       } else {
         Alert.alert('❌ Erro', 'Não foi possível iniciar a tarefa.');
       }
@@ -102,7 +104,7 @@ export default function TarefasScreen() {
       const tarefaAtualizada = await MockDataService.updateTarefaStatus(tarefaId, 'Concluída', user?.id);
       if (tarefaAtualizada) {
         Alert.alert('✅ Sucesso', `Tarefa "${tarefaAtualizada.titulo}" concluída com sucesso!`);
-        loadTarefas();
+      loadTarefas();
       } else {
         Alert.alert('❌ Erro', 'Não foi possível concluir a tarefa.');
       }
@@ -180,12 +182,12 @@ export default function TarefasScreen() {
   };
 
   return (
-    <MainLayout title="Tarefas">
+    <MainLayout title={t('tasks.title')}>
       <ScrollView style={styles.content}>
         <View style={styles.description}>
-          <Paragraph>Gerencie as tarefas da equipe</Paragraph>
+          <Paragraph>{t('tasks.description')}</Paragraph>
           {console.log('Perfil do usuário:', user?.perfil)}
-          {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa') && (
+          {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
             <View style={styles.buttonGroup}>
               <Button
                 mode="contained"
@@ -193,7 +195,7 @@ export default function TarefasScreen() {
                 style={styles.createButton}
                 icon="plus"
               >
-                Nova Tarefa
+{t('tasks.newTask')}
               </Button>
               <Button
                 mode="outlined"
@@ -201,7 +203,7 @@ export default function TarefasScreen() {
                 style={styles.batchButton}
                 icon="account-multiple-plus"
               >
-                Atribuir em Lote
+{t('tasks.batchAssign')}
               </Button>
             </View>
           )}
@@ -225,8 +227,8 @@ export default function TarefasScreen() {
               <Card key={tarefa.id} style={styles.card}>
                 <Card.Content>
                   <View style={styles.cardHeader}>
-                    <Title style={styles.cardTitle}>{tarefa.titulo}</Title>
-                    {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa') && (
+                  <Title style={styles.cardTitle}>{tarefa.titulo}</Title>
+                    {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
                       <Menu
                         visible={menuVisible === tarefa.id}
                         onDismiss={() => setMenuVisible(null)}
@@ -346,7 +348,7 @@ export default function TarefasScreen() {
                 Excluir
               </Button>
             </View>
-          </View>
+    </View>
         </Modal>
       </Portal>
 

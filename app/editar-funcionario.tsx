@@ -34,7 +34,7 @@ export default function EditarColaboradorScreen() {
   // Estados para o DatePicker de Data de Entrada
   const [showDateEntradaPicker, setShowDateEntradaPicker] = useState(false);
   const [selectedDateEntrada, setSelectedDateEntrada] = useState<Date | null>(null);
-  const [tempDateEntrada, setTempDateEntrada] = useState<Date | null>(null);
+  const [tempDateEntrada, setTempDateEntrada] = useState<Date>(new Date());
   
   const [formData, setFormData] = useState({
     codigoUsuario: '',
@@ -279,7 +279,8 @@ export default function EditarColaboradorScreen() {
 
   // Funções para o DatePicker de Data de Entrada
   const openDateEntradaPicker = () => {
-    setTempDateEntrada(selectedDateEntrada || new Date());
+    const dateToUse = selectedDateEntrada || new Date();
+    setTempDateEntrada(dateToUse);
     setShowDateEntradaPicker(true);
   };
 

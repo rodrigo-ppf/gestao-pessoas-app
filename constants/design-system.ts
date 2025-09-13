@@ -21,10 +21,12 @@ export const DesignSystem = {
     surfaceVariant: '#f5f5f5', // Superfície variante
     
     text: {
-      primary: '#212121',    // Texto principal
-      secondary: '#757575',  // Texto secundário
-      disabled: '#bdbdbd',   // Texto desabilitado
-      hint: '#9e9e9e',       // Texto de dica
+      primary: '#1a1a1a',    // Texto principal - mais escuro
+      secondary: '#424242',  // Texto secundário - mais escuro
+      disabled: '#9e9e9e',   // Texto desabilitado
+      hint: '#757575',       // Texto de dica - mais escuro
+      onPrimary: '#ffffff',  // Texto sobre cor primária
+      onSurface: '#1a1a1a',  // Texto sobre superfície
     },
     
     // Status
@@ -34,6 +36,10 @@ export const DesignSystem = {
       completed: '#4caf50',  // Concluído
       cancelled: '#f44336',  // Cancelado
     },
+    
+    // Bordas e divisores
+    border: '#e0e0e0',       // Borda padrão
+    divider: '#e0e0e0',      // Divisor
     
     // Perfis
     profiles: {

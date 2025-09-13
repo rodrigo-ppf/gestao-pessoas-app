@@ -56,28 +56,28 @@ export default function HomeEmpresaScreen() {
       description: 'Criar conta para administrador da empresa',
       icon: 'account-plus',
       onPress: () => router.push('/cadastro-usuario'),
-      show: user?.perfil === 'admin_empresa'
+      show: user?.perfil === 'admin_empresa' || user?.perfil === 'admin_sistema'
     },
     {
       title: 'Gerenciar Colaboradores',
       description: 'Visualizar e gerenciar colaboradores',
       icon: 'account-group',
       onPress: () => router.push('/colaboradores'),
-      show: user?.perfil === 'admin_empresa'
+      show: user?.perfil === 'admin_empresa' || user?.perfil === 'admin_sistema'
     },
     {
       title: 'Criar Tarefa',
       description: 'Criar nova tarefa para colaboradores',
       icon: 'plus',
       onPress: () => router.push('/criar-tarefa'),
-      show: user?.perfil === 'admin_empresa'
+      show: user?.perfil === 'admin_empresa' || user?.perfil === 'admin_sistema'
     },
     {
       title: 'Visualizar Tarefas',
       description: 'Ver todas as tarefas da empresa',
       icon: 'clipboard-list',
       onPress: () => router.push('/tarefas'),
-      show: user?.perfil === 'admin_empresa'
+      show: user?.perfil === 'admin_empresa' || user?.perfil === 'admin_sistema'
     }
   ].filter(item => item.show);
 
