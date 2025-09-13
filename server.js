@@ -7,18 +7,16 @@ const app = express();
 console.log('🚀 Iniciando servidor...');
 console.log(`📁 Diretório atual: ${__dirname}`);
 
-// Verificar se a pasta dist existe
-const distPath = path.join(__dirname, 'dist');
+// Estamos dentro da pasta dist, então servir arquivos do diretório atual
+const currentPath = __dirname;
 const publicPath = path.join(__dirname, 'public');
 
-console.log(`📁 Pasta dist: ${distPath} (existe: ${fs.existsSync(distPath)})`);
+console.log(`📁 Diretório atual: ${currentPath}`);
 console.log(`📁 Pasta public: ${publicPath} (existe: ${fs.existsSync(publicPath)})`);
 
-// Servir arquivos estáticos da pasta dist (se existir)
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  console.log('✅ Servindo arquivos da pasta dist');
-}
+// Servir arquivos estáticos do diretório atual (dist)
+app.use(express.static(currentPath));
+console.log('✅ Servindo arquivos do diretório atual');
 
 // Servir arquivos estáticos da pasta public (fallback)
 if (fs.existsSync(publicPath)) {
@@ -28,16 +26,16 @@ if (fs.existsSync(publicPath)) {
 
 // Rota de health check
 app.get('/health', (req, res) => {
-  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  const indexPath = path.join(__dirname, 'index.html');
   const indexExists = fs.existsSync(indexPath);
   
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    distPath: distPath,
+    currentPath: currentPath,
     indexExists: indexExists,
-    distFiles: fs.existsSync(distPath) ? fs.readdirSync(distPath) : []
+    files: fs.readdirSync(currentPath)
   });
 });
 
@@ -45,11 +43,16 @@ app.get('/health', (req, res) => {
 app.get('*', (req, res) => {
   console.log(`📄 Requisição para: ${req.url}`);
   
-  // Tentar servir index.html da pasta dist primeiro
-  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
-  if (fs.existsSync(distIndexPath)) {
-    console.log('📄 Servindo index.html da pasta dist');
-    res.sendFile(distIndexPath);
+  // Se for uma rota da API ou health check, retornar 404
+  if (req.url.startsWith('/api/') || req.url.startsWith('/health')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  
+  // Tentar servir index.html do diretório atual
+  const indexPath = path.join(__dirname, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    console.log('📄 Servindo index.html do diretório atual');
+    res.sendFile(indexPath);
     return;
   }
   

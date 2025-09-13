@@ -50,6 +50,9 @@ export interface Usuario {
   ativo: boolean;
   liderId?: string; // ID do líder (para funcionários)
   equipe?: string[]; // IDs dos funcionários (para líderes)
+  preferencias?: {
+    mostrarDashboard?: boolean;
+  };
 }
 
 export interface HistoricoTarefa {
@@ -364,6 +367,22 @@ class MockDataService {
     return usuariosFiltrados;
   }
 
+  public getLideres(): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'lider' && u.ativo);
+  }
+
+  public getColaboradores(): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'funcionario' && u.ativo);
+  }
+
+  public getLideresByEmpresa(empresaId: string): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'lider' && u.empresaId === empresaId && u.ativo);
+  }
+
+  public getColaboradoresByEmpresa(empresaId: string): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'funcionario' && u.empresaId === empresaId && u.ativo);
+  }
+
   public getAllUsuariosByEmpresa(empresaId: string): Usuario[] {
     // Método que retorna TODOS os usuários da empresa (incluindo inativos)
     return this.usuarios.filter(u => u.empresaId === empresaId);
@@ -381,6 +400,19 @@ class MockDataService {
     const usuarioIndex = this.usuarios.findIndex(u => u.id === usuarioId);
     if (usuarioIndex !== -1) {
       this.usuarios[usuarioIndex] = { ...this.usuarios[usuarioIndex], ...dadosAtualizados };
+      await this.saveData();
+      return this.usuarios[usuarioIndex];
+    }
+    return null;
+  }
+
+  public async updateUsuarioPreferencias(usuarioId: string, preferencias: Partial<Usuario['preferencias']>): Promise<Usuario | null> {
+    const usuarioIndex = this.usuarios.findIndex(u => u.id === usuarioId);
+    if (usuarioIndex !== -1) {
+      this.usuarios[usuarioIndex].preferencias = {
+        ...this.usuarios[usuarioIndex].preferencias,
+        ...preferencias
+      };
       await this.saveData();
       return this.usuarios[usuarioIndex];
     }

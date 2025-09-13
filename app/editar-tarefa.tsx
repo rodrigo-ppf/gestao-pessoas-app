@@ -1,10 +1,11 @@
 import FloatingMenu from '@/components/FloatingMenu';
 import TaskHistory from '@/components/TaskHistory';
+import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Modal, Paragraph, Portal, SegmentedButtons, TextInput, Title } from 'react-native-paper';
 
@@ -310,7 +311,7 @@ export default function EditarTarefaScreen() {
               mode="outlined"
               placeholder="DD/MM/AAAA"
               editable={false}
-              right={<TextInput.Icon icon="calendar" onPress={openDatePicker} />}
+              right={<TextInput.Icon icon={() => <UniversalIcon name="calendar" size={20} color="#666" />} onPress={openDatePicker} />}
             />
 
             <View style={styles.responsavelSection}>
@@ -334,9 +335,9 @@ export default function EditarTarefaScreen() {
                 mode="outlined"
                 onPress={handleCancel}
                 style={styles.cancelButton}
-                icon="arrow-left"
+                icon={() => <UniversalIcon name="arrow-left" size={20} color="#1976d2" />}
               >
-                Cancelar
+                Voltar
               </Button>
               
               <Button

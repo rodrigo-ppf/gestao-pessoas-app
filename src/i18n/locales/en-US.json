@@ -43,7 +43,16 @@
     "loginSubtitle": "Login to continue",
     "invalidCredentials": "Invalid email or password",
     "loginError": "Login failed",
-    "logoutSuccess": "Logout successful"
+    "logoutSuccess": "Logout successful",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email",
+    "passwordRequired": "Password is required",
+    "emailHint": "Enter your email address",
+    "passwordHint": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "loginHint": "Click to login",
+    "loggingIn": "Logging in..."
   },
   "company": {
     "title": "Company",

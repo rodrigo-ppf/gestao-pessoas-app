@@ -2,6 +2,7 @@ import { useTranslation } from '@/src/hooks/useTranslation';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, Paragraph, Title } from 'react-native-paper';
+import UniversalIcon from './UniversalIcon';
 
 interface LanguageSelectorProps {
   visible: boolean;
@@ -35,7 +36,7 @@ export default function LanguageSelector({ visible, onClose }: LanguageSelectorP
               mode={selectedLanguage === language.code ? 'contained' : 'outlined'}
               onPress={() => handleLanguageChange(language.code)}
               style={styles.languageButton}
-              icon={() => <>{language.flag}</>}
+              icon={() => <UniversalIcon name="flag" size={20} color={selectedLanguage === language.code ? "white" : "#1976d2"} />}
             >
               {language.name}
             </Button>

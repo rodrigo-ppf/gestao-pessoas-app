@@ -38,6 +38,27 @@ module.exports = async function (env, argv) {
     fs: false,
     path: false,
   };
+
+  // Configurações específicas para ícones do React Native Paper
+  config.module.rules.push({
+    test: /\.(png|jpe?g|gif|svg)$/i,
+    use: [
+      {
+        loader: 'file-loader',
+        options: {
+          publicPath: '/_expo/static/',
+          outputPath: 'static/',
+        },
+      },
+    ],
+  });
+
+  // Configurações para resolver ícones do Material Design
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'react-native-vector-icons/MaterialIcons': 'react-native-vector-icons/dist/MaterialIcons',
+    'react-native-vector-icons/MaterialCommunityIcons': 'react-native-vector-icons/dist/MaterialCommunityIcons',
+  };
   
   return config;
 };

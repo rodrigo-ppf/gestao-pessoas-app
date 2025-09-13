@@ -1,9 +1,10 @@
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Divider, FAB, List, Modal, Portal, Text, useTheme } from 'react-native-paper';
+import UniversalIcon from './UniversalIcon';
 
 interface MenuItem {
   title: string;
@@ -55,6 +56,7 @@ const getMenuItems = (t: any): MenuItem[] => [
   { title: 'Relatório Solicitações', icon: 'chart-pie', route: '/relatorio-solicitacoes', section: t('navigation.reports'), profiles: ['admin_sistema', 'dono_empresa', 'lider'] },
 ];
 
+
 export default function FloatingMenu() {
   const [visible, setVisible] = useState(false);
   const theme = useTheme();
@@ -88,7 +90,7 @@ export default function FloatingMenu() {
     <>
       <FAB
         style={styles.fab}
-        icon="menu"
+        icon={() => <UniversalIcon name="menu" size={20} color="white" />}
         onPress={() => setVisible(true)}
         label="Menu"
       />
@@ -119,7 +121,7 @@ export default function FloatingMenu() {
                 <List.Item
                   key={index}
                   title={item.title}
-                  left={(props) => <List.Icon {...props} icon={item.icon} />}
+                  left={(props) => <UniversalIcon name={item.icon} size={24} color={theme.colors.primary} />}
                   onPress={() => handleNavigation(item.route)}
                   style={styles.listItem}
                 />
@@ -137,8 +139,8 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     margin: 16,
-    right: 0,
-    bottom: 0,
+    left: 0,
+    top: 0,
   },
   modal: {
     margin: 20,

@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => Promise<void>;
   loading: boolean;
+  updateUser: (updatedUser: Usuario) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -134,12 +135,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const updateUser = (updatedUser: Usuario) => {
+    console.log('AuthContext: Atualizando usuário:', updatedUser);
+    setUser(updatedUser);
+    
+    if (isWeb) {
+      setWebUser(updatedUser);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     login,
     logout,
     loading,
+    updateUser,
   };
 
   return (

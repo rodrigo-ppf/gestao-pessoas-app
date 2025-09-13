@@ -43,7 +43,16 @@
     "loginSubtitle": "Faça login para continuar",
     "invalidCredentials": "Email ou senha inválidos",
     "loginError": "Falha no login",
-    "logoutSuccess": "Logout realizado com sucesso"
+    "logoutSuccess": "Logout realizado com sucesso",
+    "emailRequired": "Email é obrigatório",
+    "emailInvalid": "Email inválido",
+    "passwordRequired": "Senha é obrigatória",
+    "emailHint": "Digite seu endereço de email",
+    "passwordHint": "Digite sua senha",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "loginHint": "Clique para fazer login",
+    "loggingIn": "Entrando..."
   },
   "company": {
     "title": "Empresa",

@@ -1,9 +1,10 @@
 import FloatingMenu from '@/components/FloatingMenu';
+import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Chip, Divider, List, Paragraph, TextInput, Title } from 'react-native-paper';
 
@@ -237,10 +238,10 @@ export default function EditarLiderScreen() {
                 mode="outlined"
                 onPress={handleCancelar}
                 style={styles.cancelButton}
-                icon="arrow-left"
+                icon={() => <UniversalIcon name="arrow-left" size={20} color="#1976d2" />}
                 disabled={loading}
               >
-                Cancelar
+                Voltar
               </Button>
 
               <Button

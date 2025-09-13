@@ -1,24 +1,31 @@
 import AuthRedirect from '@/components/AuthRedirect';
 import LanguageSelector from '@/components/LanguageSelector';
+import UniversalIcon from '@/components/UniversalIcon';
+import { DesignSystem } from '@/constants/design-system';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Alert,
+    Dimensions,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import {
+    ActivityIndicator,
     Button,
     Card,
     Chip,
-    Divider,
+    HelperText,
     Paragraph,
+    Surface,
+    Text,
     TextInput,
     Title
 } from 'react-native-paper';
@@ -29,12 +36,49 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showMockUsers, setShowMockUsers] = useState(false);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showDeveloperMenu, setShowDeveloperMenu] = useState(false);
+  const [errors, setErrors] = useState({ email: '', senha: '' });
   const { login } = useAuth();
   const { t } = useTranslation();
+  
+  // Responsividade
+  const { width } = Dimensions.get('window');
+  const isSmallScreen = width <= 425;
+
+  // Validação de email
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Validação de campos
+  const validateForm = () => {
+    const newErrors = { email: '', senha: '' };
+    
+    if (!email.trim()) {
+      newErrors.email = t('auth.emailRequired');
+    } else if (!validateEmail(email)) {
+      newErrors.email = t('auth.emailInvalid');
+    }
+    
+    if (!senha.trim()) {
+      newErrors.senha = t('auth.passwordRequired');
+    }
+    
+    setErrors(newErrors);
+    return !newErrors.email && !newErrors.senha;
+  };
+
+  // Limpar erros quando o usuário digita
+  const clearError = (field: 'email' | 'senha') => {
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
 
   const handleLogin = async () => {
-    if (!email || !senha) {
-      Alert.alert(t('common.error'), t('auth.fillAllFields'));
+    if (!validateForm()) {
       return;
     }
 
@@ -117,100 +161,164 @@ export default function LoginScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView style={styles.scrollView}>
-        <View style={styles.content}>
-          <Card style={styles.card}>
-            <Card.Content>
-              <Title style={styles.title}>{t('auth.loginTitle')}</Title>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          <View style={styles.content}>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <UniversalIcon name="domain" size={48} color={DesignSystem.colors.primary} />
+              </View>
+              <Title style={[styles.title, { fontSize: isSmallScreen ? DesignSystem.typography.fontSize['2xl'] : DesignSystem.typography.fontSize['3xl'] }]}>Gestão de Pessoas</Title>
               <Paragraph style={styles.subtitle}>
-                {t('auth.loginSubtitle')}
+                Faça login para acessar o sistema
               </Paragraph>
-              
-              <TextInput
-                label={t('auth.email')}
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-                mode="outlined"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              
-              <TextInput
-                label={t('auth.password')}
-                value={senha}
-                onChangeText={setSenha}
-                secureTextEntry
-                style={styles.input}
-                mode="outlined"
-              />
-              
+            </View>
+
+            {/* Formulário de Login */}
+            <Surface style={[styles.loginCard, { marginHorizontal: isSmallScreen ? DesignSystem.spacing.sm : 0 }]} elevation={2}>
+              <View style={styles.formContainer}>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    label="Email"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      clearError('email');
+                    }}
+                    style={styles.input}
+                    mode="outlined"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    error={!!errors.email}
+                    placeholder="Digite seu email"
+                    left={<TextInput.Icon icon={() => <UniversalIcon name="email" size={20} color="#666" />} />}
+                  />
+                  <HelperText type="error" visible={!!errors.email}>
+                    {errors.email}
+                  </HelperText>
+                </View>
+                
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    label="Senha"
+                    value={senha}
+                    onChangeText={(text) => {
+                      setSenha(text);
+                      clearError('senha');
+                    }}
+                    secureTextEntry={!showPassword}
+                    style={styles.input}
+                    mode="outlined"
+                    autoComplete="password"
+                    error={!!errors.senha}
+                    placeholder="Digite sua senha"
+                    left={<TextInput.Icon icon={() => <UniversalIcon name="lock" size={20} color="#666" />} />}
+                    right={
+                      <TextInput.Icon
+                        icon={() => (
+                          <UniversalIcon 
+                            name={showPassword ? "eye-off" : "eye"} 
+                            size={20} 
+                            color="#666" 
+                          />
+                        )}
+                        onPress={() => setShowPassword(!showPassword)}
+                      />
+                    }
+                  />
+                  <HelperText type="error" visible={!!errors.senha}>
+                    {errors.senha}
+                  </HelperText>
+                </View>
+
+                {/* Link Esqueci Senha */}
+                <TouchableOpacity style={styles.forgotPasswordContainer}>
+                  <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
+                </TouchableOpacity>
+                
+                {/* Botão de Login */}
+                <Button
+                  mode="contained"
+                  onPress={handleLogin}
+                  disabled={loading}
+                  style={[styles.loginButton, loading && styles.buttonDisabled]}
+                  contentStyle={styles.buttonContent}
+                >
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color="white" />
+                      <Text style={styles.loadingText}>Entrando...</Text>
+                    </View>
+                  ) : (
+                    'Entrar no Sistema'
+                  )}
+                </Button>
+              </View>
+            </Surface>
+
+            {/* Botão Cadastrar Empresa */}
+            <View style={[styles.companySection, { marginHorizontal: isSmallScreen ? DesignSystem.spacing.sm : 0 }]}>
               <Button
-                mode="contained"
-                onPress={handleLogin}
-                loading={loading}
-                style={styles.button}
-              >
-                {t('auth.login')}
-              </Button>
-
-              <Divider style={styles.divider} />
-
-              <Button
                 mode="outlined"
-                onPress={() => setShowMockUsers(!showMockUsers)}
-                style={styles.mockButton}
+                onPress={() => router.push('/cadastro-empresa')}
+                style={styles.companyButton}
+                icon={() => <UniversalIcon name="domain-plus" size={20} color={DesignSystem.colors.primary} />}
               >
-                {showMockUsers ? t('test.hideTestUsers') : t('test.showTestUsers')}
+                Cadastrar Empresa
               </Button>
+            </View>
 
-              <Button
-                mode="outlined"
-                onPress={() => handleMockUserLogin('admin@sistema.com', 'admin123')}
-                style={styles.testButton}
+            {/* Menu de Desenvolvedor */}
+            <View style={[styles.developerSection, { marginHorizontal: isSmallScreen ? DesignSystem.spacing.sm : 0 }]}>
+              <TouchableOpacity 
+                style={styles.developerToggle}
+                onPress={() => setShowDeveloperMenu(!showDeveloperMenu)}
               >
-                {t('test.testLoginAdmin')}
-              </Button>
+                <Text style={styles.developerToggleText}>
+                  {showDeveloperMenu ? 'Ocultar' : 'Mostrar'} Acesso de Desenvolvedor
+                </Text>
+                <UniversalIcon 
+                  name={showDeveloperMenu ? "chevron-up" : "chevron-down"} 
+                  size={16} 
+                  color={DesignSystem.colors.text.secondary} 
+                />
+              </TouchableOpacity>
 
-                       <Button
-                         mode="outlined"
-                         onPress={() => {
-                           console.log('Teste direto de navegação');
-                           router.push('/home');
-                         }}
-                         style={styles.testButton}
-                       >
-                         {t('test.testDirectNavigation')}
-                       </Button>
+              {showDeveloperMenu && (
+                <Surface style={styles.developerCard} elevation={1}>
+                  <Text style={styles.developerTitle}>🔧 Acesso de Desenvolvedor</Text>
+                  
+                  <Button
+                    mode="outlined"
+                    onPress={() => setShowMockUsers(!showMockUsers)}
+                    style={styles.developerButton}
+                    compact
+                  >
+                    {showMockUsers ? 'Ocultar' : 'Mostrar'} Usuários de Teste
+                  </Button>
 
-                       <Button
-                         mode="outlined"
-                         onPress={() => {
-                           console.log('Teste navegação para verificar-email');
-                           router.push('/verificar-email');
-                         }}
-                         style={styles.testButton}
-                       >
-                         Teste Verificar Email
-                       </Button>
+                  <Button
+                    mode="outlined"
+                    onPress={() => handleMockUserLogin('admin@sistema.com', 'admin123')}
+                    style={styles.developerButton}
+                    compact
+                  >
+                    Login Admin Rápido
+                  </Button>
 
-                       <Button
-                         mode="contained"
-                         onPress={() => router.push('/cadastro-empresa')}
-                         style={styles.cadastroEmpresaButton}
-                         icon="domain-plus"
-                       >
-                         {t('company.registerNewCompany')}
-                       </Button>
 
-                       <Button
-                         mode="outlined"
-                         onPress={() => setShowLanguageSelector(true)}
-                         style={styles.languageButton}
-                         icon="translate"
-                       >
-                         {t('settings.language')}
-                       </Button>
+                  <Button
+                    mode="outlined"
+                    onPress={() => setShowLanguageSelector(true)}
+                    style={styles.developerButton}
+                    compact
+                    icon={() => <UniversalIcon name="translate" size={16} color={DesignSystem.colors.primary} />}
+                  >
+                    Idioma
+                  </Button>
+                </Surface>
+              )}
 
               {showMockUsers && (
                 <View style={styles.mockUsersContainer}>
@@ -254,9 +362,8 @@ export default function LoginScreen() {
                   ))}
                 </View>
               )}
-            </Card.Content>
-          </Card>
-        </View>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
       
@@ -271,35 +378,153 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: DesignSystem.colors.background,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: DesignSystem.spacing.lg,
   },
-  card: {
-    elevation: 4,
+  
+  // Header
+  header: {
+    alignItems: 'center',
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: DesignSystem.borderRadius.full,
+    backgroundColor: DesignSystem.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: DesignSystem.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#1976d2',
+    marginBottom: DesignSystem.spacing.sm,
+    color: DesignSystem.colors.text.primary,
+    fontSize: DesignSystem.typography.fontSize['2xl'],
+    fontWeight: DesignSystem.typography.fontWeight.bold,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 30,
-    color: '#666',
+    color: DesignSystem.colors.text.secondary,
+    fontSize: DesignSystem.typography.fontSize.base,
+  },
+  
+  // Login Card
+  loginCard: {
+    backgroundColor: DesignSystem.colors.surface,
+    borderRadius: DesignSystem.borderRadius.xl,
+    padding: DesignSystem.spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  formContainer: {
+    gap: DesignSystem.spacing.lg,
+  },
+  inputContainer: {
+    gap: DesignSystem.spacing.xs,
   },
   input: {
-    marginBottom: 15,
+    minHeight: 56,
+    backgroundColor: DesignSystem.colors.surface,
   },
-  button: {
-    marginTop: 10,
-    paddingVertical: 5,
+  
+  // Forgot Password
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginTop: DesignSystem.spacing.sm,
+  },
+  forgotPasswordText: {
+    color: DesignSystem.colors.primary,
+    fontSize: DesignSystem.typography.fontSize.sm,
+    textDecorationLine: 'underline',
+  },
+  
+  // Login Button
+  loginButton: {
+    marginTop: DesignSystem.spacing.lg,
+    minHeight: 56,
+    borderRadius: DesignSystem.borderRadius.lg,
+    backgroundColor: DesignSystem.colors.primary,
+  },
+  buttonContent: {
+    minHeight: 56,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: DesignSystem.spacing.sm,
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: DesignSystem.typography.fontSize.base,
+    fontWeight: DesignSystem.typography.fontWeight.medium,
+  },
+  
+  // Company Section
+  companySection: {
+    marginTop: DesignSystem.spacing.lg,
+    alignItems: 'center',
+  },
+  companyButton: {
+    minHeight: 48,
+    borderColor: DesignSystem.colors.primary,
+    borderWidth: 2,
+  },
+  
+  // Developer Section
+  developerSection: {
+    marginTop: DesignSystem.spacing.lg,
+  },
+  developerToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: DesignSystem.spacing.sm,
+    padding: DesignSystem.spacing.md,
+  },
+  developerToggleText: {
+    color: DesignSystem.colors.text.secondary,
+    fontSize: DesignSystem.typography.fontSize.sm,
+  },
+  developerCard: {
+    backgroundColor: DesignSystem.colors.surfaceVariant,
+    borderRadius: DesignSystem.borderRadius.lg,
+    padding: DesignSystem.spacing.lg,
+    marginTop: DesignSystem.spacing.sm,
+    gap: DesignSystem.spacing.sm,
+  },
+  developerTitle: {
+    fontSize: DesignSystem.typography.fontSize.sm,
+    fontWeight: DesignSystem.typography.fontWeight.medium,
+    color: DesignSystem.colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: DesignSystem.spacing.sm,
+  },
+  developerButton: {
+    minHeight: 40,
   },
   divider: {
     marginVertical: 20,

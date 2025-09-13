@@ -4,26 +4,28 @@ import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, IconButton, Menu, Modal, Paragraph, Portal, Title } from 'react-native-paper';
+
+const { width } = Dimensions.get('window');
+const isSmallScreen = width <= 425;
 
 export default function GerenciarEquipeScreen() {
   const { user } = useAuth();
   const { t, getCurrentLanguage, changeLanguage } = useTranslation();
   
-  // Log do idioma atual
-  console.log('Idioma atual do sistema:', getCurrentLanguage());
-  
-  // Forçar português se necessário
-  useEffect(() => {
-    const currentLang = getCurrentLanguage();
-    if (currentLang !== 'pt-BR') {
-      console.log('Forçando idioma para pt-BR');
-      changeLanguage('pt-BR');
-    }
-  }, []);
+  // Estados principais
   const [lideres, setLideres] = useState<any[]>([]);
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
+  const [allMembers, setAllMembers] = useState<any[]>([]);
+  const [filteredMembers, setFilteredMembers] = useState<any[]>([]);
+  
+  // Estados de filtros
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfile, setSelectedProfile] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  
+  // Estados de modais
   const [menuVisible, setMenuVisible] = useState<string | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [liderToDelete, setLiderToDelete] = useState<any>(null);
@@ -36,20 +38,85 @@ export default function GerenciarEquipeScreen() {
   const [deleteFuncionarioModalVisible, setDeleteFuncionarioModalVisible] = useState(false);
   const [funcionarioToDelete, setFuncionarioToDelete] = useState<any>(null);
 
-  const carregarDados = useCallback(() => {
-    if (user?.empresaId) {
-      const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-      const lideresList = usuarios.filter(u => u.perfil === 'lider');
-      const funcionariosList = usuarios.filter(u => u.perfil === 'funcionario');
+  const carregarDados = useCallback(async () => {
+    try {
+      console.log('=== DEBUG Gerenciar Equipe ===');
+      console.log('Usuário atual:', user);
+      console.log('EmpresaId do usuário:', user?.empresaId);
+      
+      if (!user?.empresaId) {
+        console.log('Usuário não tem empresaId definido');
+        return;
+      }
+
+      console.log('Carregando dados para empresa:', user.empresaId);
+      
+      const lideresList = MockDataService.getLideresByEmpresa(user.empresaId);
+      const funcionariosList = MockDataService.getColaboradoresByEmpresa(user.empresaId);
+      
+      console.log('Líderes encontrados:', lideresList);
+      console.log('Colaboradores encontrados:', funcionariosList);
+      
+      // Combinar todos os membros da equipe
+      const members = [
+        ...lideresList.map(l => ({ ...l, perfil: 'lider', status: 'ativo' })),
+        ...funcionariosList.map(f => ({ ...f, perfil: 'colaborador', status: 'ativo' }))
+      ];
       
       setLideres(lideresList);
       setFuncionarios(funcionariosList);
+      setAllMembers(members);
+      setFilteredMembers(members);
+    } catch (error) {
+      console.error('Erro ao carregar dados da equipe:', error);
     }
   }, [user?.empresaId]);
 
+  // Aplicar filtros
+  const applyFilters = useCallback(() => {
+    let filtered = [...allMembers];
+
+    // Filtro por busca
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(member =>
+        member.nome.toLowerCase().includes(query) ||
+        member.email.toLowerCase().includes(query) ||
+        member.cargo.toLowerCase().includes(query) ||
+        member.departamento.toLowerCase().includes(query)
+      );
+    }
+
+    // Filtro por perfil
+    if (selectedProfile !== 'all') {
+      filtered = filtered.filter(member => member.perfil === selectedProfile);
+    }
+
+    // Filtro por status
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(member => member.status === selectedStatus);
+    }
+
+    setFilteredMembers(filtered);
+  }, [allMembers, searchQuery, selectedProfile, selectedStatus]);
+
+  // Aplicar filtros quando os critérios mudarem
   useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  useEffect(() => {
+    console.log('useEffect carregarDados chamado');
     carregarDados();
   }, [carregarDados]);
+
+  // Carregar dados quando o usuário mudar
+  useEffect(() => {
+    console.log('useEffect user mudou:', user);
+    if (user) {
+      carregarDados();
+    }
+  }, [user]);
 
   // Atualizar dados quando a tela receber foco (voltar de outras telas)
   useFocusEffect(
