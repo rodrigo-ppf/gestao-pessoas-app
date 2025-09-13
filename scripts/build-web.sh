@@ -103,9 +103,31 @@ fi
 
 # Copiar arquivos necessários para o App Engine
 echo "📋 Copiando arquivos para App Engine..."
-cp server.minimal.js dist/server.js
-cp package.prod.json dist/package.json
-cp app.yaml dist/
+
+# Verificar se os arquivos existem antes de copiar
+if [ -f "server.minimal.js" ]; then
+    cp server.minimal.js dist/server.js
+    echo "✅ server.minimal.js copiado para dist/server.js"
+else
+    echo "❌ server.minimal.js não encontrado"
+    exit 1
+fi
+
+if [ -f "package.prod.json" ]; then
+    cp package.prod.json dist/package.json
+    echo "✅ package.prod.json copiado para dist/package.json"
+else
+    echo "❌ package.prod.json não encontrado"
+    exit 1
+fi
+
+if [ -f "app.yaml" ]; then
+    cp app.yaml dist/
+    echo "✅ app.yaml copiado para dist/"
+else
+    echo "❌ app.yaml não encontrado"
+    exit 1
+fi
 
 # Verificar se os arquivos foram copiados
 echo "🔍 Verificando arquivos copiados..."
