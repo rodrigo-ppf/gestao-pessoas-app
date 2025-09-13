@@ -50,7 +50,7 @@ fi
 
 # Build para web
 echo "🚀 Iniciando build para web..."
-npx expo export --platform web --clear
+npx expo export --platform web --clear --output-dir dist
 
 # Verificar se o arquivo modalStyles.js foi criado durante o build e modificá-lo
 echo "🔧 Verificando arquivo modalStyles.js pós-build..."
