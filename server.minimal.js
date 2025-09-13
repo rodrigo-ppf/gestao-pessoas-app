@@ -26,7 +26,10 @@ app.get('/health', (req, res) => {
 });
 
 // Servir arquivos estáticos da pasta atual (dist)
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, {
+  index: false, // Não servir index.html automaticamente
+  extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot']
+}));
 
 // Rota raiz - redirecionar para /login
 app.get('/', (req, res) => {
@@ -39,12 +42,20 @@ app.get('*', (req, res) => {
   console.log(`📄 Requisição SPA para: ${req.url}`);
   
   const indexPath = path.join(__dirname, 'index.html');
+  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
   
+  // Verificar se existe o index.html do build do Expo
   if (fs.existsSync(indexPath)) {
-    console.log('✅ Servindo index.html para rota SPA:', req.url);
+    console.log('✅ Servindo index.html do build Expo para rota SPA:', req.url);
     res.sendFile(indexPath);
-  } else {
-    console.log('❌ index.html não encontrado em:', indexPath);
+  } 
+  // Se não existe, servir a página de status da pasta public
+  else if (fs.existsSync(publicIndexPath)) {
+    console.log('⚠️ Servindo página de status (build não encontrado) para rota:', req.url);
+    res.sendFile(publicIndexPath);
+  } 
+  else {
+    console.log('❌ Nenhum index.html encontrado');
     res.status(404).send(`
       <!DOCTYPE html>
       <html>
