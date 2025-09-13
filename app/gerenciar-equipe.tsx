@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
@@ -357,10 +357,9 @@ export default function GerenciarEquipeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Gerenciar Equipe">
       <ScrollView style={styles.content}>
-        <View style={styles.header}>
-          <Title>Gerenciar Equipe</Title>
+        <View style={styles.description}>
           <Paragraph>Gerencie líderes e funcionários da sua empresa</Paragraph>
         </View>
 
@@ -856,8 +855,7 @@ export default function GerenciarEquipeScreen() {
         </Modal>
       </Portal>
 
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
@@ -869,9 +867,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  header: {
+  description: {
     padding: 20,
-    backgroundColor: '#1976d2',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   actionsContainer: {
     padding: 16,

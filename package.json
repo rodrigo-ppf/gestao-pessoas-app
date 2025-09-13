@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "build:web": "expo export --platform web",
     "build:production": "expo export --platform web --clear",
-    "build:app-engine": "./scripts/build-web.sh"
+    "build:app-engine": "./scripts/build-web.sh",
+    "deploy:optimized": "scripts/deploy-optimized.bat"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

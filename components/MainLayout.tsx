@@ -76,14 +76,16 @@ export default function MainLayout({
         {/* Side Menu */}
         {showMenu && menuVisible && (
           <View style={styles.menuContainer}>
-            <FixedMenu />
+            <FixedMenu onClose={() => setMenuVisible(false)} />
           </View>
         )}
         
-        {/* Main Content */}
-        <View style={[styles.mainContent, !showMenu || !menuVisible ? styles.fullWidth : {}]}>
-          {children}
-        </View>
+        {/* Main Content - ocultar quando menu estiver aberto */}
+        {!menuVisible && (
+          <View style={styles.mainContent}>
+            {children}
+          </View>
+        )}
       </View>
     </View>
   );

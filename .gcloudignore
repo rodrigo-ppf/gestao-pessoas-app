@@ -1,98 +1,39 @@
-# Arquivos e diretórios a serem ignorados no deploy do Google Cloud
-
-# Node.js - IGNORAR TUDO
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
-
-# Arquivos de desenvolvimento
-.env*
-*.env
-
-# Logs
-logs/
-*.log
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage e testes
-coverage/
-.nyc_output/
-test/
-tests/
-__tests__/
-*.test.*
-*.spec.*
-
-# Cache e temporários
-.npm/
-.cache/
-.tmp/
-tmp/
-temp/
-*.tmp
-*.temp
-
-# Build local
-dist/
-build/
-.next/
-.nuxt/
-
-# Git
-.git/
-.gitignore
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Documentação
-README.md
-docs/
-*.md
-
-# Configurações de desenvolvimento
-.eslintrc*
-.prettierrc*
-jest.config.*
-tsconfig.json
-metro.config.js
-web.config.js
-babel.config.js
-
-# CI/CD
-.github/
-.gitlab-ci.yml
-.travis.yml
-.circleci/
-
-# Patches
-patches/
-
-# Arquivos de desenvolvimento
-src/
-app/
-components/
-hooks/
-constants/
-scripts/
-
-# Apenas manter o essencial para produção
-!public/
+# Ignore everything except what we need for production
+*
+!dist/
 !server.js
 !app.yaml
 !package.json
+
+# Ignore large directories
+node_modules/
+.git/
+.expo/
+.expo-shared/
+dist/node_modules/
+
+# Ignore source files
+app/
+components/
+src/
+constants/
+scripts/
+assets/
+
+# Ignore config files
+*.config.js
+*.config.ts
+metro.config.js
+babel.config.js
+web.config.js
+app.json
+expo.json
+
+# Ignore development files
+*.md
+*.txt
+*.log
+.env*
+.eslintrc*
+.prettierrc*
+tsconfig.json

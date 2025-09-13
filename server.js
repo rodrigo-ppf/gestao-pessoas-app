@@ -3,98 +3,93 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// Log de inicialização
-console.log('🚀 Iniciando servidor...');
+console.log('🚀 Iniciando servidor robusto...');
 console.log(`📁 Diretório atual: ${__dirname}`);
+console.log(`📁 Arquivos disponíveis:`, fs.readdirSync(__dirname));
 
-// Estamos dentro da pasta dist, então servir arquivos do diretório atual
-const currentPath = __dirname;
-const publicPath = path.join(__dirname, 'public');
-
-console.log(`📁 Diretório atual: ${currentPath}`);
-console.log(`📁 Pasta public: ${publicPath} (existe: ${fs.existsSync(publicPath)})`);
-
-// Servir arquivos estáticos do diretório atual (dist)
-app.use(express.static(currentPath));
-console.log('✅ Servindo arquivos do diretório atual');
-
-// Servir arquivos estáticos da pasta public (fallback)
-if (fs.existsSync(publicPath)) {
-  app.use(express.static(publicPath));
-  console.log('✅ Servindo arquivos da pasta public');
-}
-
-// Rota de health check
-app.get('/health', (req, res) => {
-  const indexPath = path.join(__dirname, 'index.html');
-  const indexExists = fs.existsSync(indexPath);
-  
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    currentPath: currentPath,
-    indexExists: indexExists,
-    files: fs.readdirSync(currentPath)
-  });
+// Middleware para logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
 });
 
-// Rota para todas as páginas (SPA)
-app.get('*', (req, res) => {
+// Servir arquivos estáticos da pasta dist
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Health check - MUITO IMPORTANTE
+app.get('/health', (req, res) => {
+  console.log('🏥 Health check chamado');
+  try {
+    const response = { 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      dirname: __dirname,
+      files: fs.readdirSync(__dirname),
+      message: 'Servidor funcionando perfeitamente'
+    };
+    console.log('✅ Health check response:', response);
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Erro no health check:', error);
+    res.status(500).json({ 
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Rota raiz - redirecionar para /login
+app.get('/', (req, res) => {
+  console.log('🔄 Redirecionando de / para /login');
+  res.redirect(302, '/login');
+});
+
+// SPA routing - servir index.html para todas as outras rotas
+app.get('/*', (req, res) => {
   console.log(`📄 Requisição para: ${req.url}`);
   
-  // Se for uma rota da API ou health check, retornar 404
-  if (req.url.startsWith('/api/') || req.url.startsWith('/health')) {
-    return res.status(404).json({ error: 'Not found' });
+  try {
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    
+    if (fs.existsSync(indexPath)) {
+      console.log('✅ Servindo index.html para rota:', req.url);
+      res.sendFile(indexPath);
+    } else {
+      console.log('❌ index.html não encontrado em:', indexPath);
+      res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Erro 404</title></head>
+        <body>
+          <h1>404 - Página não encontrada</h1>
+          <p>index.html não encontrado em: ${indexPath}</p>
+          <p>Arquivos disponíveis: ${fs.readdirSync(__dirname).join(', ')}</p>
+        </body>
+        </html>
+      `);
+    }
+  } catch (error) {
+    console.error('❌ Erro ao servir arquivo:', error);
+    res.status(500).send('Erro interno do servidor');
   }
-  
-  // Tentar servir index.html do diretório atual
-  const indexPath = path.join(__dirname, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    console.log('📄 Servindo index.html do diretório atual');
-    res.sendFile(indexPath);
-    return;
-  }
-  
-  // Tentar servir index.html da pasta public
-  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
-  if (fs.existsSync(publicIndexPath)) {
-    console.log('📄 Servindo index.html da pasta public');
-    res.sendFile(publicIndexPath);
-    return;
-  }
-  
-  // Se não existe nenhum index.html, retornar página simples
-  console.log('❌ Nenhum index.html encontrado, servindo página simples');
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Gestão de Pessoas</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
-        .success { color: #2e7d32; background: #e8f5e8; padding: 15px; border-radius: 4px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>🚀 Gestão de Pessoas</h1>
-        <div class="success">
-          <strong>✅ Servidor Funcionando!</strong><br>
-          O servidor Express está rodando corretamente no Google App Engine.
-        </div>
-        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-        <p><strong>Uptime:</strong> ${process.uptime()} segundos</p>
-        <p><a href="/health">Verificar Status</a></p>
-      </div>
-    </body>
-    </html>
-  `);
 });
 
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`🌐 Aplicação disponível!`);
+  console.log(`🚀 Servidor robusto rodando na porta ${PORT}`);
+  console.log(`🏥 Health check disponível em: http://localhost:${PORT}/health`);
+  console.log(`📁 Servindo arquivos de: ${__dirname}`);
+  console.log(`📄 index.html existe: ${fs.existsSync(path.join(__dirname, 'index.html'))}`);
+});
+
+// Tratamento de erros
+process.on('uncaughtException', (error) => {
+  console.error('❌ Erro não capturado:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Promise rejeitada:', reason);
 });

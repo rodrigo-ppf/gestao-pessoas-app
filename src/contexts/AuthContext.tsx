@@ -1,7 +1,7 @@
-import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import MockDataService, { Usuario } from '../services/MockDataService';
 import StorageService from '../services/StorageService';
-import { isWeb, initializeWebData, getWebUser, setWebUser, clearWebUser } from '../utils/webInit';
+import { clearWebUser, initializeWebData, isWeb, setWebUser } from '../utils/webInit';
 
 interface AuthContextType {
   user: Usuario | null;

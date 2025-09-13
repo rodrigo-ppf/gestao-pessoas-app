@@ -3,7 +3,7 @@ import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Dimensions, StyleSheet, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Divider, List, Text, useTheme } from 'react-native-paper';
 import UniversalIcon from './UniversalIcon';
 
@@ -19,7 +19,11 @@ interface MenuItem {
   allowedProfiles?: string[];
 }
 
-export default function FixedMenu() {
+interface FixedMenuProps {
+  onClose?: () => void;
+}
+
+export default function FixedMenu({ onClose }: FixedMenuProps) {
   const { user, isAuthenticated } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
@@ -137,6 +141,15 @@ export default function FixedMenu() {
         <Text variant="titleLarge" style={[styles.headerTitle, { color: theme.colors.primary }]}>
           Menu
         </Text>
+        {onClose && (
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <UniversalIcon 
+              name="close" 
+              size={24} 
+              color={theme.colors.primary}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       
       <Divider style={styles.divider} />
@@ -190,10 +203,17 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: {
     fontWeight: 'bold',
     textAlign: 'center',
+    flex: 1,
+  },
+  closeButton: {
+    padding: 8,
   },
   divider: {
     marginVertical: 8,
