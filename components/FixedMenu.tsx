@@ -154,7 +154,8 @@ export default function FixedMenu({ onClose }: FixedMenuProps) {
       
       <Divider style={styles.divider} />
       
-      {Object.entries(groupedItems).map(([section, items]) => (
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {Object.entries(groupedItems).map(([section, items]) => (
         <View key={section} style={styles.section}>
           <List.Accordion
             title={section}
@@ -182,7 +183,8 @@ export default function FixedMenu({ onClose }: FixedMenuProps) {
             ))}
           </List.Accordion>
         </View>
-      ))}
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -217,6 +219,9 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 8,
+  },
+  scrollContainer: {
+    flex: 1,
   },
   section: {
     marginBottom: 4,

@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -174,10 +174,9 @@ export default function CriarTarefaScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Criar Tarefa">
       <ScrollView style={styles.content}>
-        <View style={styles.header}>
-          <Title>Criar Tarefa</Title>
+        <View style={styles.description}>
           <Paragraph>Preencha os dados da nova tarefa</Paragraph>
         </View>
 
@@ -377,8 +376,7 @@ export default function CriarTarefaScreen() {
         </Modal>
       </Portal>
 
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 

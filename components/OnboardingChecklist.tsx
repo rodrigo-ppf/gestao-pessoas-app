@@ -95,6 +95,19 @@ export default function OnboardingChecklist() {
       ];
 
       setChecklistItems(items);
+      
+      // Verificar se está 100% completo e ocultar automaticamente
+      const completedItems = items.filter(item => item.completed).length;
+      const isComplete = completedItems === items.length && items.length > 0;
+      
+      if (isComplete && user && user.preferencias?.mostrarDashboard !== false) {
+        // Ocultar automaticamente se 100% completo
+        await MockDataService.updateUsuarioPreferencias(user.id, {
+          mostrarDashboard: false
+        });
+        setShowDashboard(false);
+        console.log('Dashboard ocultado automaticamente - 100% completo');
+      }
     } catch (error) {
       console.error('Erro ao carregar status do checklist:', error);
     } finally {

@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router, useFocusEffect } from 'expo-router';
@@ -180,10 +180,9 @@ export default function TarefasScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Tarefas">
       <ScrollView style={styles.content}>
-        <View style={styles.header}>
-          <Title>Tarefas</Title>
+        <View style={styles.description}>
           <Paragraph>Gerencie as tarefas da equipe</Paragraph>
           {console.log('Perfil do usuário:', user?.perfil)}
           {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa') && (
@@ -351,8 +350,7 @@ export default function TarefasScreen() {
         </Modal>
       </Portal>
 
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
