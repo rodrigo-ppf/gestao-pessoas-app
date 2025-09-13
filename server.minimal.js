@@ -13,32 +13,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// Servir arquivos estáticos da pasta atual (dist)
-app.use(express.static(__dirname));
-
-// Health check
+// Health check - MUITO IMPORTANTE para App Engine
 app.get('/health', (req, res) => {
   console.log('🏥 Health check chamado');
-  try {
-    const response = { 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      dirname: __dirname,
-      files: fs.readdirSync(__dirname),
-      message: 'Servidor funcionando perfeitamente'
-    };
-    console.log('✅ Health check response:', response);
-    res.json(response);
-  } catch (error) {
-    console.error('❌ Erro no health check:', error);
-    res.status(500).json({ 
-      status: 'error',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    dirname: __dirname,
+    files: fs.readdirSync(__dirname)
+  });
 });
+
+// Servir arquivos estáticos da pasta atual (dist)
+app.use(express.static(__dirname, {
+  index: ['index.html'],
+  extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico']
+}));
 
 // Rota raiz - redirecionar para /login
 app.get('/', (req, res) => {
@@ -47,32 +38,28 @@ app.get('/', (req, res) => {
 });
 
 // SPA routing - servir index.html para todas as outras rotas
-app.get('/*', (req, res) => {
-  console.log(`📄 Requisição para: ${req.url}`);
+app.get('*', (req, res) => {
+  console.log(`📄 Requisição SPA para: ${req.url}`);
   
-  try {
-    const indexPath = path.join(__dirname, 'index.html');
-    
-    if (fs.existsSync(indexPath)) {
-      console.log('✅ Servindo index.html para rota:', req.url);
-      res.sendFile(indexPath);
-    } else {
-      console.log('❌ index.html não encontrado em:', indexPath);
-      res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>Erro 404</title></head>
-        <body>
-          <h1>404 - Página não encontrada</h1>
-          <p>index.html não encontrado em: ${indexPath}</p>
-          <p>Arquivos disponíveis: ${fs.readdirSync(__dirname).join(', ')}</p>
-        </body>
-        </html>
-      `);
-    }
-  } catch (error) {
-    console.error('❌ Erro ao servir arquivo:', error);
-    res.status(500).send('Erro interno do servidor');
+  const indexPath = path.join(__dirname, 'index.html');
+  
+  if (fs.existsSync(indexPath)) {
+    console.log('✅ Servindo index.html para rota SPA:', req.url);
+    res.sendFile(indexPath);
+  } else {
+    console.log('❌ index.html não encontrado em:', indexPath);
+    res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Erro 404</title></head>
+      <body>
+        <h1>404 - Página não encontrada</h1>
+        <p>index.html não encontrado em: ${indexPath}</p>
+        <p>Arquivos disponíveis: ${fs.readdirSync(__dirname).join(', ')}</p>
+        <p><a href="/health">Verificar Status</a></p>
+      </body>
+      </html>
+    `);
   }
 });
 

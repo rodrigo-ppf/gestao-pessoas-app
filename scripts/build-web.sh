@@ -107,6 +107,29 @@ cp server.minimal.js dist/server.js
 cp package.prod.json dist/package.json
 cp app.yaml dist/
 
+# Verificar se os arquivos foram copiados
+echo "🔍 Verificando arquivos copiados..."
+if [ -f "dist/server.js" ]; then
+    echo "✅ server.js copiado com sucesso"
+else
+    echo "❌ Erro ao copiar server.js"
+    exit 1
+fi
+
+if [ -f "dist/package.json" ]; then
+    echo "✅ package.json copiado com sucesso"
+else
+    echo "❌ Erro ao copiar package.json"
+    exit 1
+fi
+
+if [ -f "dist/app.yaml" ]; then
+    echo "✅ app.yaml copiado com sucesso"
+else
+    echo "❌ Erro ao copiar app.yaml"
+    exit 1
+fi
+
 # Copiar pasta public como fallback
 if [ -d "public" ]; then
     echo "📁 Copiando pasta public como fallback..."
