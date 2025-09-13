@@ -154,6 +154,25 @@
     "companyAdmin": "Admin Empresa",
     "collaborator": "Colaborador"
   },
+  "tasks": {
+    "title": "Tarefas",
+    "description": "Gerencie as tarefas da equipe",
+    "newTask": "Nova Tarefa",
+    "batchAssign": "Atribuir em Lote",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "status": {
+      "pending": "Pendente",
+      "inProgress": "Em Andamento",
+      "completed": "Concluída",
+      "cancelled": "Cancelada"
+    },
+    "priority": {
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa"
+    }
+  },
   "home": {
     "welcome": "Bem-vindo ao Sistema",
     "subtitle": "Gerencie empresas, colaboradores e tarefas",
