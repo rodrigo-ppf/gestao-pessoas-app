@@ -28,6 +28,16 @@ else
     exit 1
 fi
 
+# Remover página de status para forçar geração da aplicação React
+echo "🗑️ Removendo página de status para forçar geração da aplicação React..."
+if [ -f "public/index.html" ]; then
+    echo "📄 Removendo public/index.html (página de status)"
+    rm public/index.html
+    echo "✅ public/index.html removido"
+else
+    echo "ℹ️ public/index.html não existe"
+fi
+
 # Build para web
 echo "🚀 Iniciando build para web..."
 npx expo export --platform web --clear
