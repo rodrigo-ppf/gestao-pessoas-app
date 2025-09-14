@@ -58,22 +58,69 @@ app.get('*', (req, res) => {
       console.log(`📄 Tamanho do index.html: ${indexContent.length} caracteres`);
       console.log(`📄 Primeiras 200 caracteres: ${indexContent.substring(0, 200)}`);
       
-      if (indexContent.length < 100) {
-        console.log('⚠️ AVISO: index.html parece estar vazio ou muito pequeno!');
+      // Verificar se o index.html contém conteúdo válido do React/Expo
+      const hasReactContent = indexContent.includes('react') || indexContent.includes('React') || indexContent.includes('_expo');
+      const hasScriptTags = indexContent.includes('<script');
+      const hasValidHTML = indexContent.includes('<!DOCTYPE html>') || indexContent.includes('<html');
+      
+      if (indexContent.length < 100 || !hasValidHTML || !hasScriptTags) {
+        console.log('⚠️ AVISO: index.html parece estar vazio, corrompido ou incompleto!');
+        console.log(`   - Tamanho: ${indexContent.length} caracteres`);
+        console.log(`   - Tem HTML válido: ${hasValidHTML}`);
+        console.log(`   - Tem script tags: ${hasScriptTags}`);
+        console.log(`   - Tem conteúdo React: ${hasReactContent}`);
         console.log('📄 Conteúdo completo:', indexContent);
         
-        // Se o index.html está vazio, servir uma página de erro informativa
+        // Se o index.html está vazio ou corrompido, servir uma página de erro informativa
         res.status(500).send(`
           <!DOCTYPE html>
-          <html>
-          <head><title>Erro de Build</title></head>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Erro de Build - Gestão de Pessoas</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+              .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              .error { color: #d32f2f; }
+              .info { background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 15px 0; }
+              .code { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+              .btn { background: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 10px 5px; }
+            </style>
+          </head>
           <body>
-            <h1>❌ Erro de Build</h1>
-            <p>O build do Expo gerou um index.html vazio ou muito pequeno.</p>
-            <p><strong>Tamanho:</strong> ${indexContent.length} caracteres</p>
-            <p><strong>Conteúdo:</strong></p>
-            <pre>${indexContent}</pre>
-            <p><a href="/health">Verificar Status do Servidor</a></p>
+            <div class="container">
+              <h1 class="error">❌ Erro de Build Detectado</h1>
+              <p>O build do Expo gerou um <code>index.html</code> vazio, corrompido ou incompleto.</p>
+              
+              <div class="info">
+                <h3>📊 Informações do Build:</h3>
+                <ul>
+                  <li><strong>Tamanho:</strong> ${indexContent.length} caracteres</li>
+                  <li><strong>HTML válido:</strong> ${hasValidHTML ? '✅' : '❌'}</li>
+                  <li><strong>Script tags:</strong> ${hasScriptTags ? '✅' : '❌'}</li>
+                  <li><strong>Conteúdo React:</strong> ${hasReactContent ? '✅' : '❌'}</li>
+                </ul>
+              </div>
+              
+              <div class="info">
+                <h3>🔧 Possíveis Soluções:</h3>
+                <ul>
+                  <li>Verificar se o build do Expo foi executado corretamente</li>
+                  <li>Verificar se todas as dependências foram instaladas</li>
+                  <li>Verificar se há erros no script de build</li>
+                  <li>Verificar se o <code>package.dev.json</code> está correto</li>
+                </ul>
+              </div>
+              
+              <h3>📄 Conteúdo do index.html:</h3>
+              <div class="code">${indexContent || '(arquivo vazio)'}</div>
+              
+              <div style="margin-top: 20px;">
+                <a href="/health" class="btn">Verificar Status do Servidor</a>
+                <a href="https://github.com/rodrigo-ppf/gestao-pessoas-app" class="btn" target="_blank">Ver Código no GitHub</a>
+              </div>
+            </div>
           </body>
           </html>
         `);
@@ -81,6 +128,18 @@ app.get('*', (req, res) => {
       }
     } catch (error) {
       console.error('❌ Erro ao ler index.html:', error);
+      res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Erro de Leitura</title></head>
+        <body>
+          <h1>❌ Erro ao Ler index.html</h1>
+          <p>Erro: ${error.message}</p>
+          <p><a href="/health">Verificar Status do Servidor</a></p>
+        </body>
+        </html>
+      `);
+      return;
     }
     
     res.sendFile(indexPath);
