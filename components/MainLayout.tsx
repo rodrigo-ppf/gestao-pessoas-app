@@ -80,12 +80,10 @@ export default function MainLayout({
           </View>
         )}
         
-        {/* Main Content - ocultar quando menu estiver aberto */}
-        {!menuVisible && (
-          <View style={styles.mainContent}>
-            {children}
-          </View>
-        )}
+        {/* Main Content */}
+        <View style={[styles.mainContent, menuVisible && styles.mainContentWithMenu]}>
+          {children}
+        </View>
       </View>
     </View>
   );
@@ -149,6 +147,9 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mainContentWithMenu: {
+    marginLeft: isSmallScreen ? 280 : 300,
   },
   fullWidth: {
     width: '100%',

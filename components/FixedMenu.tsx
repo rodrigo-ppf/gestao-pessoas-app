@@ -3,7 +3,7 @@ import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Divider, List, Text, useTheme } from 'react-native-paper';
 import UniversalIcon from './UniversalIcon';
 
@@ -75,6 +75,11 @@ export default function FixedMenu({ onClose }: FixedMenuProps) {
   };
 
   const handleNavigation = (route: string) => {
+    // Fechar o menu antes de navegar
+    if (onClose) {
+      onClose();
+    }
+    
     if (route === 'show-dashboard') {
       handleShowDashboard();
     } else {
