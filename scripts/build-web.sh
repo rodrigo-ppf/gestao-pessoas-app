@@ -4,27 +4,38 @@ echo "🔧 Preparando build para web..."
 
 # Criar arquivo CSS necessário para o expo-router
 echo "📁 Criando arquivo CSS necessário..."
+
+# Criar o arquivo no caminho correto (assets)
 mkdir -p node_modules/expo-router/assets
 echo "/* Arquivo CSS vazio para resolver problema do expo-router */" > node_modules/expo-router/assets/modal.module.css
 
-# Verificar se o arquivo foi criado
-if [ -f "node_modules/expo-router/assets/modal.module.css" ]; then
-    echo "✅ Arquivo CSS criado com sucesso"
-else
-    echo "❌ Erro ao criar arquivo CSS"
-    exit 1
-fi
-
-# Criar também o arquivo no caminho alternativo
-echo "📁 Criando arquivo CSS no caminho alternativo..."
+# Criar também o arquivo no caminho alternativo (build/modal/web)
 mkdir -p node_modules/expo-router/build/modal/web
 echo "/* Arquivo CSS vazio para resolver problema do expo-router */" > node_modules/expo-router/build/modal/web/modal.module.css
 
-# Verificar se ambos os arquivos foram criados
-if [ -f "node_modules/expo-router/build/modal/web/modal.module.css" ]; then
-    echo "✅ Arquivo CSS alternativo criado com sucesso"
+# Criar também no caminho que o erro está procurando
+mkdir -p node_modules/expo-router/build/assets
+echo "/* Arquivo CSS vazio para resolver problema do expo-router */" > node_modules/expo-router/build/assets/modal.module.css
+
+# Verificar se os arquivos foram criados
+if [ -f "node_modules/expo-router/assets/modal.module.css" ]; then
+    echo "✅ Arquivo CSS criado em assets/"
 else
-    echo "❌ Erro ao criar arquivo CSS alternativo"
+    echo "❌ Erro ao criar arquivo CSS em assets/"
+    exit 1
+fi
+
+if [ -f "node_modules/expo-router/build/modal/web/modal.module.css" ]; then
+    echo "✅ Arquivo CSS criado em build/modal/web/"
+else
+    echo "❌ Erro ao criar arquivo CSS em build/modal/web/"
+    exit 1
+fi
+
+if [ -f "node_modules/expo-router/build/assets/modal.module.css" ]; then
+    echo "✅ Arquivo CSS criado em build/assets/"
+else
+    echo "❌ Erro ao criar arquivo CSS em build/assets/"
     exit 1
 fi
 
