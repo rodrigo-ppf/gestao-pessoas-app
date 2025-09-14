@@ -37,9 +37,28 @@ app.get('/', (req, res) => {
   res.redirect(302, '/login');
 });
 
-// SPA routing - servir index.html para todas as outras rotas
+// SPA routing - servir index.html apenas para rotas que não são arquivos estáticos
 app.get('*', (req, res) => {
   console.log(`📄 Requisição SPA para: ${req.url}`);
+  
+  // Verificar se é um arquivo estático (JS, CSS, imagens, etc.)
+  const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.json'];
+  const isStaticFile = staticExtensions.some(ext => req.url.includes(ext));
+  
+  if (isStaticFile) {
+    console.log(`📁 Arquivo estático detectado: ${req.url}`);
+    // Para arquivos estáticos, tentar servir diretamente
+    const filePath = path.join(__dirname, req.url);
+    if (fs.existsSync(filePath)) {
+      console.log(`✅ Servindo arquivo estático: ${filePath}`);
+      res.sendFile(filePath);
+      return;
+    } else {
+      console.log(`❌ Arquivo estático não encontrado: ${filePath}`);
+      res.status(404).send('File not found');
+      return;
+    }
+  }
   
   const indexPath = path.join(__dirname, 'index.html');
   const publicIndexPath = path.join(__dirname, 'public', 'index.html');
