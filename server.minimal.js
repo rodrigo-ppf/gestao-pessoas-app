@@ -57,6 +57,11 @@ app.get('*', (req, res) => {
       const indexContent = fs.readFileSync(indexPath, 'utf8');
       console.log(`📄 Tamanho do index.html: ${indexContent.length} caracteres`);
       console.log(`📄 Primeiras 200 caracteres: ${indexContent.substring(0, 200)}`);
+      console.log(`📄 Últimas 200 caracteres: ${indexContent.substring(indexContent.length - 200)}`);
+      
+      // Verificar se contém conteúdo da página de status
+      const isStatusPage = indexContent.includes('Build em Progresso') || indexContent.includes('Servidor Funcionando');
+      console.log(`📄 É página de status: ${isStatusPage}`);
       
       // Verificar se o index.html contém conteúdo válido do React/Expo
       const hasReactContent = indexContent.includes('react') || indexContent.includes('React') || indexContent.includes('_expo');
