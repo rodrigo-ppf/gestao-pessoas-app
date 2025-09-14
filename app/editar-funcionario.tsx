@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -332,10 +332,9 @@ export default function EditarColaboradorScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Editar Colaborador" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Editar Colaborador</Title>
           <Paragraph>Edite as informações do colaborador</Paragraph>
         </View>
 
@@ -746,9 +745,7 @@ export default function EditarColaboradorScreen() {
           </View>
         </Modal>
       </Portal>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 

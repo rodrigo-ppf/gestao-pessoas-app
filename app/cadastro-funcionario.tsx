@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -264,10 +264,9 @@ export default function CadastroFuncionarioScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Cadastrar Colaborador" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Cadastrar Colaborador</Title>
           <Paragraph>Cadastre um novo colaborador e atribua a um líder</Paragraph>
         </View>
 
@@ -459,9 +458,7 @@ export default function CadastroFuncionarioScreen() {
           </Card.Content>
         </Card>
       </ScrollView>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
