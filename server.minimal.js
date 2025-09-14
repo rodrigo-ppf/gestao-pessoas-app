@@ -51,6 +51,21 @@ app.get('*', (req, res) => {
   // Verificar se existe o index.html do build do Expo
   if (fs.existsSync(indexPath)) {
     console.log('✅ Servindo index.html do build Expo para rota SPA:', req.url);
+    
+    // Verificar o conteúdo do index.html
+    try {
+      const indexContent = fs.readFileSync(indexPath, 'utf8');
+      console.log(`📄 Tamanho do index.html: ${indexContent.length} caracteres`);
+      console.log(`📄 Primeiras 200 caracteres: ${indexContent.substring(0, 200)}`);
+      
+      if (indexContent.length < 100) {
+        console.log('⚠️ AVISO: index.html parece estar vazio ou muito pequeno!');
+        console.log('📄 Conteúdo completo:', indexContent);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao ler index.html:', error);
+    }
+    
     res.sendFile(indexPath);
   } 
   // Se não existe, servir a página de status da pasta public
