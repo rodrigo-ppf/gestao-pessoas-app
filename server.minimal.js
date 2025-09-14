@@ -61,6 +61,23 @@ app.get('*', (req, res) => {
       if (indexContent.length < 100) {
         console.log('⚠️ AVISO: index.html parece estar vazio ou muito pequeno!');
         console.log('📄 Conteúdo completo:', indexContent);
+        
+        // Se o index.html está vazio, servir uma página de erro informativa
+        res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>Erro de Build</title></head>
+          <body>
+            <h1>❌ Erro de Build</h1>
+            <p>O build do Expo gerou um index.html vazio ou muito pequeno.</p>
+            <p><strong>Tamanho:</strong> ${indexContent.length} caracteres</p>
+            <p><strong>Conteúdo:</strong></p>
+            <pre>${indexContent}</pre>
+            <p><a href="/health">Verificar Status do Servidor</a></p>
+          </body>
+          </html>
+        `);
+        return;
       }
     } catch (error) {
       console.error('❌ Erro ao ler index.html:', error);
