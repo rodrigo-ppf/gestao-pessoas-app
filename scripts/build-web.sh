@@ -32,6 +32,38 @@ fi
 echo "🚀 Iniciando build para web..."
 npx expo export --platform web --clear
 
+# Verificar se o build gerou a aplicação React corretamente
+echo "🔍 Verificando se o build gerou a aplicação React..."
+if [ -f "dist/index.html" ]; then
+    # Verificar se o index.html contém conteúdo da aplicação React
+    if grep -q "react" dist/index.html || grep -q "_expo" dist/index.html || grep -q "<script" dist/index.html; then
+        echo "✅ Build da aplicação React gerado com sucesso"
+    else
+        echo "❌ ERRO: Build gerou página de status em vez da aplicação React!"
+        echo "📄 Conteúdo do index.html:"
+        head -20 dist/index.html
+        echo "🔧 Tentando corrigir o build..."
+        
+        # Remover o index.html incorreto
+        rm dist/index.html
+        
+        # Tentar build novamente com configurações diferentes
+        echo "🔄 Tentando build alternativo..."
+        npx expo export --platform web --clear --output-dir dist
+        
+        # Verificar novamente
+        if [ -f "dist/index.html" ] && (grep -q "react" dist/index.html || grep -q "_expo" dist/index.html); then
+            echo "✅ Build corrigido com sucesso"
+        else
+            echo "❌ ERRO: Ainda não conseguiu gerar a aplicação React"
+            exit 1
+        fi
+    fi
+else
+    echo "❌ ERRO: index.html não foi gerado"
+    exit 1
+fi
+
 # Verificar se o build foi criado
 if [ -d "dist" ]; then
     echo "✅ Build criado com sucesso"
