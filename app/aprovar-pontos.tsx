@@ -418,8 +418,32 @@ export default function AprovarPontosScreen() {
                 <Card.Content>
                   <View style={styles.funcionarioHeader}>
                     <View style={styles.funcionarioInfo}>
-                      <Text style={styles.funcionarioNome}>{grupo.funcionarioNome}</Text>
-                      <Text style={styles.funcionarioCargo}>{grupo.funcionarioCargo}</Text>
+                      <Text 
+                        style={[
+                          styles.funcionarioNome,
+                          {
+                            writingMode: 'horizontal-tb',
+                            textOrientation: 'mixed',
+                            direction: 'ltr',
+                            unicodeBidi: 'normal'
+                          }
+                        ]}
+                      >
+                        {grupo.funcionarioNome}
+                      </Text>
+                      <Text 
+                        style={[
+                          styles.funcionarioCargo,
+                          {
+                            writingMode: 'horizontal-tb',
+                            textOrientation: 'mixed',
+                            direction: 'ltr',
+                            unicodeBidi: 'normal'
+                          }
+                        ]}
+                      >
+                        {grupo.funcionarioCargo}
+                      </Text>
                     </View>
                     <View style={styles.funcionarioStats}>
                       <Chip 
@@ -527,10 +551,30 @@ export default function AprovarPontosScreen() {
                 <View key={registro.id} style={styles.registroCard}>
                   <View style={styles.registroHeader}>
                     <View style={styles.colaboradorInfo}>
-                      <Text style={styles.colaboradorNome}>
+                      <Text 
+                        style={[
+                          styles.colaboradorNome,
+                          {
+                            writingMode: 'horizontal-tb',
+                            textOrientation: 'mixed',
+                            direction: 'ltr',
+                            unicodeBidi: 'normal'
+                          }
+                        ]}
+                      >
                         {registro.colaboradorNome}
                       </Text>
-                      <Text style={styles.colaboradorCargo}>
+                      <Text 
+                        style={[
+                          styles.colaboradorCargo,
+                          {
+                            writingMode: 'horizontal-tb',
+                            textOrientation: 'mixed',
+                            direction: 'ltr',
+                            unicodeBidi: 'normal'
+                          }
+                        ]}
+                      >
                         {registro.colaboradorCargo}
                       </Text>
                     </View>
@@ -756,10 +800,6 @@ const styles = StyleSheet.create({
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
-    textAlign: 'left',
-    lineHeight: 18,
-    width: '100%',
-    display: 'block',
   },
   emptyState: {
     padding: 40,
@@ -842,18 +882,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1976d2',
     marginBottom: 4,
-    textAlign: 'left',
-    lineHeight: 24,
-    width: '100%',
-    display: 'block',
   },
   funcionarioCargo: {
     fontSize: 14,
     color: '#666',
-    textAlign: 'left',
-    lineHeight: 20,
-    width: '100%',
-    display: 'block',
   },
   funcionarioStats: {
     flexDirection: 'row',
@@ -906,18 +938,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
-    textAlign: 'left',
-    lineHeight: 20,
-    width: '100%',
-    display: 'block',
   },
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
-    textAlign: 'left',
-    lineHeight: 18,
-    width: '100%',
-    display: 'block',
   },
   registroData: {
     fontSize: 13,
