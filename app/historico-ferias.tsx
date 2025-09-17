@@ -1,6 +1,7 @@
 import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
+import MockDataService from '@/src/services/MockDataService';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, DataTable, Modal, Paragraph, Portal, Text, TextInput, Title } from 'react-native-paper';
@@ -9,7 +10,7 @@ interface SolicitacaoFerias {
   id: string;
   colaboradorId: string;
   colaboradorNome: string;
-  colaboradorCargo: string;
+  colaboradorCargo?: string;
   dataInicio: string;
   dataFim: string;
   diasSolicitados: number;
@@ -19,6 +20,7 @@ interface SolicitacaoFerias {
   aprovadoPor?: string;
   dataAprovacao?: string;
   motivoRejeicao?: string;
+  empresaId: string;
 }
 
 interface ResumoFerias {
@@ -59,8 +61,13 @@ export default function HistoricoFeriasScreen() {
     setLoading(true);
     
     try {
+      console.log('Gerando histórico de férias...');
+      console.log('Período selecionado:', dataInicio, 'a', dataFim);
+      console.log('Filtros:', { status: filtroStatus, colaborador: filtroColaborador });
+      
       // Carregar dados reais do localStorage
       const historicoSimulado = await MockDataService.getSolicitacoesFerias();
+      console.log('Total de solicitações encontradas:', historicoSimulado.length);
 
       // Filtrar por período
       const dataInicioObj = new Date(dataInicio.split('/').reverse().join('-'));
@@ -68,12 +75,25 @@ export default function HistoricoFeriasScreen() {
       
       let historicoFiltrado = historicoSimulado.filter(solicitacao => {
         const dataSolicitacaoObj = new Date(solicitacao.dataSolicitacao.split('/').reverse().join('-'));
-        return dataSolicitacaoObj >= dataInicioObj && dataSolicitacaoObj <= dataFimObj;
+        const dentroDoPeriodo = dataSolicitacaoObj >= dataInicioObj && dataSolicitacaoObj <= dataFimObj;
+        
+        if (dentroDoPeriodo) {
+          console.log('Solicitação dentro do período:', {
+            colaborador: solicitacao.colaboradorNome,
+            dataSolicitacao: solicitacao.dataSolicitacao,
+            status: solicitacao.status
+          });
+        }
+        
+        return dentroDoPeriodo;
       });
+      
+      console.log('Solicitações filtradas por período:', historicoFiltrado.length);
 
       // Filtrar por status
       if (filtroStatus !== 'todos') {
         historicoFiltrado = historicoFiltrado.filter(solicitacao => solicitacao.status === filtroStatus);
+        console.log('Solicitações filtradas por status:', historicoFiltrado.length);
       }
 
       // Filtrar por colaborador
@@ -81,21 +101,27 @@ export default function HistoricoFeriasScreen() {
         historicoFiltrado = historicoFiltrado.filter(solicitacao => 
           solicitacao.colaboradorNome.toLowerCase().includes(filtroColaborador.toLowerCase())
         );
+        console.log('Solicitações filtradas por colaborador:', historicoFiltrado.length);
       }
 
-      // Se for colaborador, mostrar apenas suas solicitações
+      // Filtrar por empresa (se usuário não for admin do sistema)
+      if (user?.perfil !== 'admin_sistema' && user?.empresaId) {
+        historicoFiltrado = historicoFiltrado.filter(solicitacao => 
+          solicitacao.empresaId === user.empresaId
+        );
+        console.log('Solicitações filtradas por empresa:', historicoFiltrado.length);
+      }
+
+      // Filtrar por colaborador específico (se usuário for colaborador)
       if (user?.perfil === 'colaborador' || user?.perfil === 'funcionario') {
         historicoFiltrado = historicoFiltrado.filter(solicitacao => 
           solicitacao.colaboradorId === user.id || solicitacao.colaboradorNome === user.nome
         );
-      } else {
-        // Para gestores, mostrar apenas solicitações da mesma empresa
-        historicoFiltrado = historicoFiltrado.filter(solicitacao => 
-          solicitacao.empresaId === user?.empresaId
-        );
+        console.log('Solicitações filtradas por colaborador específico:', historicoFiltrado.length);
       }
 
       setHistorico(historicoFiltrado);
+      console.log('Histórico final definido:', historicoFiltrado.length, 'solicitações');
 
       // Gerar resumo
       const resumoMap = new Map<string, ResumoFerias>();
@@ -142,10 +168,10 @@ export default function HistoricoFeriasScreen() {
       setResumo(resumoArray);
 
       const mensagem = (user?.perfil === 'colaborador' || user?.perfil === 'funcionario')
-        ? `Seu histórico de férias gerado com ${historicoFiltrado.length} solicitações.`
-        : `Histórico de férias gerado com ${historicoFiltrado.length} solicitações de ${resumoArray.length} colaboradores.`;
+        ? `✅ Seu histórico de férias gerado com sucesso!\n\n📊 ${historicoFiltrado.length} solicitações encontradas\n📅 Período: ${dataInicio} a ${dataFim}`
+        : `✅ Histórico de férias gerado com sucesso!\n\n📊 ${historicoFiltrado.length} solicitações encontradas\n👥 ${resumoArray.length} colaboradores\n📅 Período: ${dataInicio} a ${dataFim}`;
 
-      Alert.alert('Sucesso', mensagem);
+      Alert.alert('Histórico Gerado', mensagem);
       
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível gerar o histórico de férias.');
@@ -447,16 +473,33 @@ export default function HistoricoFeriasScreen() {
               </>
             )}
 
-            <Button
-              mode="contained"
-              onPress={gerarHistorico}
-              loading={loading}
-              disabled={loading || !dataInicio || !dataFim}
-              style={styles.generateButton}
-              icon="file-document-outline"
-            >
-              {loading ? 'Gerando...' : 'Gerar Histórico'}
-            </Button>
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                onPress={gerarHistorico}
+                loading={loading}
+                disabled={loading || !dataInicio || !dataFim}
+                style={styles.generateButton}
+                icon="file-document-outline"
+              >
+                {loading ? 'Gerando...' : 'Gerar Histórico'}
+              </Button>
+              
+              <Button
+                mode="outlined"
+                onPress={async () => {
+                  console.log('Testando carregamento de dados...');
+                  const dados = await MockDataService.getSolicitacoesFerias();
+                  console.log('Dados encontrados:', dados);
+                  Alert.alert('Debug', `Encontradas ${dados.length} solicitações no localStorage`);
+                }}
+                disabled={loading}
+                style={styles.debugButton}
+                icon="bug"
+              >
+                Debug
+              </Button>
+            </View>
           </Card.Content>
         </Card>
 
@@ -718,7 +761,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   generateButton: {
-    marginTop: 8,
+    flex: 1,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  debugButton: {
+    minWidth: 100,
   },
   colaboradorNome: {
     fontSize: 14,
