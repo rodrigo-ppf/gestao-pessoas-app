@@ -165,6 +165,25 @@ export default function SolicitarFeriasScreen() {
       return false;
     }
 
+    // Verificar se há conflitos com períodos já solicitados
+    const conflito = solicitacoes.find(solicitacao => {
+      if (solicitacao.status === 'rejeitado') return false; // Ignorar solicitações rejeitadas
+      
+      const inicioExistente = new Date(solicitacao.dataInicio.split('/').reverse().join('-'));
+      const fimExistente = new Date(solicitacao.dataFim.split('/').reverse().join('-'));
+      
+      // Verificar sobreposição de períodos
+      return (dataInicioObj <= fimExistente && dataFimObj >= inicioExistente);
+    });
+
+    if (conflito) {
+      Alert.alert(
+        'Conflito de Períodos', 
+        `Este período conflita com uma solicitação já existente:\n\n📅 ${conflito.dataInicio} a ${conflito.dataFim}\n📋 Status: ${getStatusText(conflito.status)}\n\nPor favor, escolha um período diferente.`
+      );
+      return false;
+    }
+
     return true;
   };
 
@@ -223,6 +242,8 @@ export default function SolicitarFeriasScreen() {
       setDataInicio('');
       setDataFim('');
       setObservacoes('');
+      
+      console.log('Formulário limpo, pronto para nova solicitação');
       
     } catch (error) {
       console.error('Erro ao solicitar férias:', error);
@@ -444,7 +465,7 @@ export default function SolicitarFeriasScreen() {
     <MainLayout title="Solicitar Férias" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Paragraph>Solicite suas férias e acompanhe o status das solicitações</Paragraph>
+          <Paragraph>Solicite suas férias e acompanhe o status das solicitações. Você pode fazer múltiplas solicitações para diferentes períodos.</Paragraph>
         </View>
 
         {/* Saldo de Férias */}
@@ -529,20 +550,37 @@ export default function SolicitarFeriasScreen() {
               </View>
             )}
 
-            <Button
-              mode="contained"
-              onPress={handleSolicitarFerias}
-              loading={loading}
-              disabled={loading || !dataInicio || !dataFim}
-              style={[
-                styles.submitButton,
-                loading && styles.submitButtonLoading
-              ]}
-              icon={loading ? undefined : "send"}
-              contentStyle={styles.submitButtonContent}
-            >
-              {loading ? 'Enviando Solicitação...' : 'Solicitar Férias'}
-            </Button>
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                onPress={handleSolicitarFerias}
+                loading={loading}
+                disabled={loading || !dataInicio || !dataFim}
+                style={[
+                  styles.submitButton,
+                  loading && styles.submitButtonLoading
+                ]}
+                icon={loading ? undefined : "send"}
+                contentStyle={styles.submitButtonContent}
+              >
+                {loading ? 'Enviando Solicitação...' : 'Solicitar Férias'}
+              </Button>
+              
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  setDataInicio('');
+                  setDataFim('');
+                  setObservacoes('');
+                  console.log('Formulário limpo manualmente');
+                }}
+                disabled={loading}
+                style={styles.clearButton}
+                icon="refresh"
+              >
+                Limpar
+              </Button>
+            </View>
           </Card.Content>
         </Card>
 
@@ -784,6 +822,14 @@ const styles = StyleSheet.create({
   },
   submitButtonContent: {
     paddingVertical: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  clearButton: {
+    flex: 1,
   },
   processingContainer: {
     backgroundColor: '#e3f2fd',
