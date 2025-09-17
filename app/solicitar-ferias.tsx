@@ -48,29 +48,57 @@ export default function SolicitarFeriasScreen() {
 
   const carregarSaldoFerias = async () => {
     try {
-      // Simular dados de saldo de férias
+      // Carregar saldo real baseado nas solicitações aprovadas
+      const mockDataService = new MockDataService();
+      const solicitacoesSalvas = await mockDataService.getSolicitacoesFerias();
+      const solicitacoesDoUsuario = solicitacoesSalvas.filter(solicitacao => 
+        solicitacao.colaboradorId === user?.id || solicitacao.colaboradorNome === user?.nome
+      );
+      
+      const diasGozados = solicitacoesDoUsuario
+        .filter(s => s.status === 'aprovado')
+        .reduce((total, s) => total + s.diasSolicitados, 0);
+      
+      const diasPendentes = solicitacoesDoUsuario
+        .filter(s => s.status === 'pendente')
+        .reduce((total, s) => total + s.diasSolicitados, 0);
+      
+      const saldoReal: SaldoFerias = {
+        diasDisponiveis: 30 - diasGozados - diasPendentes,
+        diasVendidos: 0,
+        diasGozados: diasGozados,
+        proximoVencimento: '31/12/2025'
+      };
+      setSaldoFerias(saldoReal);
+    } catch (error) {
+      console.error('Erro ao carregar saldo de férias:', error);
+      // Fallback para dados simulados
       const saldoSimulado: SaldoFerias = {
         diasDisponiveis: 30,
         diasVendidos: 0,
-        diasGozados: 5,
+        diasGozados: 0,
         proximoVencimento: '31/12/2025'
       };
       setSaldoFerias(saldoSimulado);
-    } catch (error) {
-      console.error('Erro ao carregar saldo de férias:', error);
     }
   };
 
   const carregarSolicitacoes = async () => {
     try {
+      console.log('Carregando solicitações de férias...');
+      console.log('Usuário atual:', user?.id, user?.nome);
+      
       // Carregar solicitações do localStorage
-      const solicitacoesSalvas = await MockDataService.getSolicitacoesFerias();
+      const mockDataService = new MockDataService();
+      const solicitacoesSalvas = await mockDataService.getSolicitacoesFerias();
+      console.log('Solicitações salvas:', solicitacoesSalvas);
       
       // Filtrar apenas as solicitações do usuário atual
       const solicitacoesDoUsuario = solicitacoesSalvas.filter(solicitacao => 
         solicitacao.colaboradorId === user?.id || solicitacao.colaboradorNome === user?.nome
       );
       
+      console.log('Solicitações do usuário:', solicitacoesDoUsuario);
       setSolicitacoes(solicitacoesDoUsuario);
     } catch (error) {
       console.error('Erro ao carregar solicitações:', error);
@@ -158,18 +186,14 @@ export default function SolicitarFeriasScreen() {
       };
 
       // Salvar no localStorage
-      await MockDataService.salvarSolicitacaoFerias(novaSolicitacao);
+      console.log('Salvando nova solicitação:', novaSolicitacao);
+      const mockDataService = new MockDataService();
+      await mockDataService.salvarSolicitacaoFerias(novaSolicitacao);
+      console.log('Solicitação salva com sucesso');
       
-      // Atualizar estado local
-      setSolicitacoes(prev => [novaSolicitacao, ...prev]);
-      
-      // Atualizar saldo
-      if (saldoFerias) {
-        setSaldoFerias(prev => prev ? {
-          ...prev,
-          diasDisponiveis: prev.diasDisponiveis - diasSolicitados
-        } : null);
-      }
+      // Recarregar dados para garantir consistência
+      await carregarSolicitacoes();
+      await carregarSaldoFerias();
 
       // Feedback de sucesso mais detalhado
       Alert.alert(
