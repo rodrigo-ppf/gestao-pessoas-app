@@ -192,8 +192,10 @@ export default function SolicitarFeriasScreen() {
       console.log('Solicitação salva com sucesso');
       
       // Recarregar dados para garantir consistência
+      console.log('Recarregando dados após salvar...');
       await carregarSolicitacoes();
       await carregarSaldoFerias();
+      console.log('Dados recarregados com sucesso');
 
       // Feedback de sucesso mais detalhado
       Alert.alert(
@@ -535,11 +537,26 @@ export default function SolicitarFeriasScreen() {
         </Card>
 
         {/* Histórico de Solicitações */}
-        {solicitacoes.length > 0 && (
-          <Card style={styles.historyCard}>
-            <Card.Content>
-              <Title style={styles.sectionTitle}>Suas Solicitações</Title>
+        <Card style={styles.historyCard}>
+          <Card.Content>
+            <Title style={styles.sectionTitle}>Suas Solicitações</Title>
+            
+            {/* Debug info */}
+            <View style={styles.debugContainer}>
+              <Text style={styles.debugText}>
+                Debug: {solicitacoes.length} solicitações encontradas
+              </Text>
+              <Button
+                mode="outlined"
+                onPress={carregarSolicitacoes}
+                style={styles.debugButton}
+                compact
+              >
+                Recarregar
+              </Button>
+            </View>
               
+            {solicitacoes.length > 0 ? (
               <DataTable>
                 <DataTable.Header>
                   <DataTable.Title>Período</DataTable.Title>
@@ -590,9 +607,18 @@ export default function SolicitarFeriasScreen() {
                   </DataTable.Row>
                 ))}
               </DataTable>
-            </Card.Content>
-          </Card>
-        )}
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>
+                  Nenhuma solicitação de férias encontrada
+                </Text>
+                <Text style={styles.emptySubtext}>
+                  Suas solicitações aparecerão aqui após serem enviadas
+                </Text>
+              </View>
+            )}
+          </Card.Content>
+        </Card>
 
         {/* DatePicker Modals */}
         <Portal>
@@ -747,6 +773,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1976d2',
     fontWeight: '600',
+  },
+  debugContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+    padding: 8,
+    borderRadius: 4,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  debugButton: {
+    marginLeft: 8,
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
   periodoText: {
     fontSize: 14,
