@@ -1,6 +1,7 @@
 import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
+import MockDataService from '@/src/services/MockDataService';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, DataTable, Modal, Paragraph, Portal, Text, TextInput, Title } from 'react-native-paper';
@@ -9,6 +10,7 @@ interface SolicitacaoFerias {
   id: string;
   colaboradorId: string;
   colaboradorNome: string;
+  colaboradorCargo?: string;
   dataInicio: string;
   dataFim: string;
   diasSolicitados: number;
@@ -18,6 +20,7 @@ interface SolicitacaoFerias {
   aprovadoPor?: string;
   dataAprovacao?: string;
   motivoRejeicao?: string;
+  empresaId: string;
 }
 
 interface SaldoFerias {
@@ -42,15 +45,24 @@ export default function SolicitarFeriasScreen() {
   const [processando, setProcessando] = useState(false);
 
   useEffect(() => {
-    carregarSaldoFerias();
-    carregarSolicitacoes();
+    const inicializarDados = async () => {
+      try {
+        console.log('Inicializando dados de férias...');
+        
+        await carregarSaldoFerias();
+        await carregarSolicitacoes();
+      } catch (error) {
+        console.error('Erro ao inicializar dados:', error);
+      }
+    };
+    
+    inicializarDados();
   }, []);
 
   const carregarSaldoFerias = async () => {
     try {
       // Carregar saldo real baseado nas solicitações aprovadas
-      const mockDataService = new MockDataService();
-      const solicitacoesSalvas = await mockDataService.getSolicitacoesFerias();
+      const solicitacoesSalvas = await MockDataService.getSolicitacoesFerias();
       const solicitacoesDoUsuario = solicitacoesSalvas.filter(solicitacao => 
         solicitacao.colaboradorId === user?.id || solicitacao.colaboradorNome === user?.nome
       );
@@ -89,8 +101,7 @@ export default function SolicitarFeriasScreen() {
       console.log('Usuário atual:', user?.id, user?.nome);
       
       // Carregar solicitações do localStorage
-      const mockDataService = new MockDataService();
-      const solicitacoesSalvas = await mockDataService.getSolicitacoesFerias();
+      const solicitacoesSalvas = await MockDataService.getSolicitacoesFerias();
       console.log('Solicitações salvas:', solicitacoesSalvas);
       
       // Filtrar apenas as solicitações do usuário atual
@@ -187,8 +198,7 @@ export default function SolicitarFeriasScreen() {
 
       // Salvar no localStorage
       console.log('Salvando nova solicitação:', novaSolicitacao);
-      const mockDataService = new MockDataService();
-      await mockDataService.salvarSolicitacaoFerias(novaSolicitacao);
+      await MockDataService.salvarSolicitacaoFerias(novaSolicitacao);
       console.log('Solicitação salva com sucesso');
       
       // Recarregar dados para garantir consistência
@@ -546,14 +556,29 @@ export default function SolicitarFeriasScreen() {
               <Text style={styles.debugText}>
                 Debug: {solicitacoes.length} solicitações encontradas
               </Text>
-              <Button
-                mode="outlined"
-                onPress={carregarSolicitacoes}
-                style={styles.debugButton}
-                compact
-              >
-                Recarregar
-              </Button>
+              <View style={styles.debugButtons}>
+                <Button
+                  mode="outlined"
+                  onPress={carregarSolicitacoes}
+                  style={styles.debugButton}
+                  compact
+                >
+                  Recarregar
+                </Button>
+                <Button
+                  mode="outlined"
+                  onPress={async () => {
+                    console.log('Testando localStorage...');
+                    const testData = await MockDataService.getSolicitacoesFerias();
+                    console.log('Dados do localStorage:', testData);
+                    Alert.alert('Debug', `Encontradas ${testData.length} solicitações no localStorage`);
+                  }}
+                  style={styles.debugButton}
+                  compact
+                >
+                  Testar
+                </Button>
+              </View>
             </View>
               
             {solicitacoes.length > 0 ? (
@@ -789,8 +814,12 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     flex: 1,
   },
+  debugButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   debugButton: {
-    marginLeft: 8,
+    minWidth: 80,
   },
   emptyState: {
     padding: 40,
