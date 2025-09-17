@@ -98,18 +98,10 @@ export default function HistoricoPontoScreen() {
     // Se o usuário logado for colaborador, mostrar apenas seus registros
     let colaboradoresParaProcessar = colaboradores;
     
-    if (user?.perfil === 'colaborador') {
-      console.log('Usuário logado:', user);
-      console.log('Colaboradores disponíveis:', colaboradores);
-      
-      // Tentar diferentes formas de comparação
-      colaboradoresParaProcessar = colaboradores.filter(col => {
-        console.log('Comparando:', col.id, 'com', user.id, 'Resultado:', col.id === user.id);
-        console.log('Comparando email:', col.email, 'com', user.email, 'Resultado:', col.email === user.email);
-        return col.id === user.id || col.email === user.email;
-      });
-      
-      console.log('Colaboradores filtrados:', colaboradoresParaProcessar);
+    if (user?.perfil === 'colaborador' || user?.perfil === 'funcionario') {
+      colaboradoresParaProcessar = colaboradores.filter(col => 
+        col.id === user.id || col.email === user.email
+      );
     }
 
     colaboradoresParaProcessar.forEach(colaborador => {
@@ -205,7 +197,7 @@ export default function HistoricoPontoScreen() {
       setHistorico(historicoSimulado);
       setResumoColaboradores(resumo);
       
-      const mensagem = user?.perfil === 'colaborador' 
+      const mensagem = (user?.perfil === 'colaborador' || user?.perfil === 'funcionario')
         ? `Seu histórico gerado com ${historicoSimulado.length} registros.`
         : `Histórico gerado com ${historicoSimulado.length} registros de ${resumo.length} colaboradores.`;
       
@@ -398,7 +390,7 @@ export default function HistoricoPontoScreen() {
       <ScrollView style={styles.content}>
         <View style={styles.header}>
           <Paragraph>
-            {user?.perfil === 'colaborador' 
+            {(user?.perfil === 'colaborador' || user?.perfil === 'funcionario')
               ? 'Consulte seu histórico de ponto por período' 
               : 'Consulte o histórico de ponto dos colaboradores por período'
             }
@@ -458,19 +450,19 @@ export default function HistoricoPontoScreen() {
           <Card style={styles.summaryCard}>
             <Card.Content>
               <Title style={styles.sectionTitle}>
-                {user?.perfil === 'colaborador' ? 'Seu Resumo' : 'Resumo por Colaborador'}
+                {(user?.perfil === 'colaborador' || user?.perfil === 'funcionario') ? 'Seu Resumo' : 'Resumo por Colaborador'}
               </Title>
               
               <DataTable>
                 <DataTable.Header>
-                  {user?.perfil !== 'colaborador' && <DataTable.Title>Colaborador</DataTable.Title>}
+                  {(user?.perfil !== 'colaborador' && user?.perfil !== 'funcionario') && <DataTable.Title>Colaborador</DataTable.Title>}
                   <DataTable.Title numeric>Dias</DataTable.Title>
                   <DataTable.Title numeric>Total Horas</DataTable.Title>
                 </DataTable.Header>
 
                 {resumoColaboradores.map((resumo) => (
                   <DataTable.Row key={resumo.colaboradorId}>
-                    {user?.perfil !== 'colaborador' && (
+                    {(user?.perfil !== 'colaborador' && user?.perfil !== 'funcionario') && (
                       <DataTable.Cell>
                         <View>
                           <Text style={styles.colaboradorNome}>{resumo.colaboradorNome}</Text>
@@ -506,7 +498,7 @@ export default function HistoricoPontoScreen() {
 
               <DataTable>
                 <DataTable.Header>
-                  {user?.perfil !== 'colaborador' && <DataTable.Title>Colaborador</DataTable.Title>}
+                  {(user?.perfil !== 'colaborador' && user?.perfil !== 'funcionario') && <DataTable.Title>Colaborador</DataTable.Title>}
                   <DataTable.Title>Data</DataTable.Title>
                   <DataTable.Title>Horário</DataTable.Title>
                   <DataTable.Title>Tipo</DataTable.Title>
@@ -514,7 +506,7 @@ export default function HistoricoPontoScreen() {
 
                 {historico.map((registro) => (
                   <DataTable.Row key={registro.id}>
-                    {user?.perfil !== 'colaborador' && (
+                    {(user?.perfil !== 'colaborador' && user?.perfil !== 'funcionario') && (
                       <DataTable.Cell>
                         <View>
                           <Text style={styles.colaboradorNome}>{registro.colaboradorNome}</Text>
