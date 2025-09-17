@@ -39,6 +39,7 @@ export default function SolicitarFeriasScreen() {
   const [saldoFerias, setSaldoFerias] = useState<SaldoFerias | null>(null);
   const [solicitacoes, setSolicitacoes] = useState<SolicitacaoFerias[]>([]);
   const [loading, setLoading] = useState(false);
+  const [processando, setProcessando] = useState(false);
 
   useEffect(() => {
     carregarSaldoFerias();
@@ -132,8 +133,12 @@ export default function SolicitarFeriasScreen() {
     if (!validarSolicitacao()) return;
 
     setLoading(true);
+    setProcessando(true);
     
     try {
+      // Simular delay para mostrar feedback
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       const dataInicioObj = new Date(dataInicio.split('/').reverse().join('-'));
       const dataFimObj = new Date(dataFim.split('/').reverse().join('-'));
       const diasSolicitados = calcularDiasEntreDatas(dataInicioObj, dataFimObj);
@@ -166,9 +171,16 @@ export default function SolicitarFeriasScreen() {
         } : null);
       }
 
+      // Feedback de sucesso mais detalhado
       Alert.alert(
-        'Sucesso', 
-        `Solicitação de férias enviada com sucesso!\n\nPeríodo: ${dataInicio} a ${dataFim}\nDias: ${diasSolicitados}\n\nAguarde a aprovação do seu gestor.`
+        '✅ Solicitação Enviada!', 
+        `Sua solicitação de férias foi enviada com sucesso!\n\n📅 Período: ${dataInicio} a ${dataFim}\n📊 Dias solicitados: ${diasSolicitados}\n📋 Status: Pendente de aprovação\n\n⏳ Aguarde a análise do seu gestor. Você receberá uma notificação quando houver uma resposta.`,
+        [
+          {
+            text: 'OK',
+            style: 'default'
+          }
+        ]
       );
 
       // Limpar formulário
@@ -177,9 +189,24 @@ export default function SolicitarFeriasScreen() {
       setObservacoes('');
       
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível enviar a solicitação de férias.');
+      console.error('Erro ao solicitar férias:', error);
+      Alert.alert(
+        '❌ Erro ao Enviar', 
+        'Não foi possível enviar sua solicitação de férias. Verifique sua conexão e tente novamente.',
+        [
+          {
+            text: 'Tentar Novamente',
+            onPress: () => handleSolicitarFerias()
+          },
+          {
+            text: 'Cancelar',
+            style: 'cancel'
+          }
+        ]
+      );
     } finally {
       setLoading(false);
+      setProcessando(false);
     }
   };
 
@@ -458,15 +485,27 @@ export default function SolicitarFeriasScreen() {
               placeholder="Informe o motivo das férias ou observações relevantes..."
             />
 
+            {processando && (
+              <View style={styles.processingContainer}>
+                <Text style={styles.processingText}>
+                  ⏳ Processando sua solicitação...
+                </Text>
+              </View>
+            )}
+
             <Button
               mode="contained"
               onPress={handleSolicitarFerias}
               loading={loading}
               disabled={loading || !dataInicio || !dataFim}
-              style={styles.submitButton}
-              icon="send"
+              style={[
+                styles.submitButton,
+                loading && styles.submitButtonLoading
+              ]}
+              icon={loading ? undefined : "send"}
+              contentStyle={styles.submitButtonContent}
             >
-              {loading ? 'Enviando...' : 'Solicitar Férias'}
+              {loading ? 'Enviando Solicitação...' : 'Solicitar Férias'}
             </Button>
           </Card.Content>
         </Card>
@@ -664,6 +703,26 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 8,
+  },
+  submitButtonLoading: {
+    opacity: 0.8,
+  },
+  submitButtonContent: {
+    paddingVertical: 8,
+  },
+  processingContainer: {
+    backgroundColor: '#e3f2fd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1976d2',
+  },
+  processingText: {
+    fontSize: 14,
+    color: '#1976d2',
+    fontWeight: '600',
   },
   periodoText: {
     fontSize: 14,
