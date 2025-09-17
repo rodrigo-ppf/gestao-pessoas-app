@@ -756,6 +756,10 @@ const styles = StyleSheet.create({
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
+    textAlign: 'left',
+    lineHeight: 18,
+    width: '100%',
+    display: 'block',
   },
   emptyState: {
     padding: 40,
@@ -838,14 +842,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1976d2',
     marginBottom: 4,
-    writingMode: 'horizontal-tb',
-    textOrientation: 'mixed',
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
+    textAlign: 'left',
+    lineHeight: 24,
+    width: '100%',
+    display: 'block',
   },
   funcionarioCargo: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'left',
+    lineHeight: 20,
+    width: '100%',
+    display: 'block',
   },
   funcionarioStats: {
     flexDirection: 'row',
@@ -853,6 +861,10 @@ const styles = StyleSheet.create({
   },
   statChip: {
     height: 28,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   emptyCard: {
     margin: 16,
@@ -894,14 +906,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
-    writingMode: 'horizontal-tb',
-    textOrientation: 'mixed',
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
+    textAlign: 'left',
+    lineHeight: 20,
+    width: '100%',
+    display: 'block',
   },
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
+    textAlign: 'left',
+    lineHeight: 18,
+    width: '100%',
+    display: 'block',
   },
   registroData: {
     fontSize: 13,
