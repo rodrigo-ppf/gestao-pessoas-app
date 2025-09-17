@@ -60,7 +60,7 @@ export default function RegistrarPontoScreen({ navigation }) {
   const getPunchTypeColor = (tipo) => {
     switch (tipo) {
       case 'entrada': return '#4caf50';
-      case 'saida_almoco': return '#ff9800';
+      case 'saida_almoco': return '#f39c12';
       case 'entrada_almoco': return '#2196f3';
       case 'saida': return '#f44336';
       default: return '#666';

@@ -118,7 +118,7 @@ export default function RelatorioPontoScreen({ navigation }) {
               <DataTable.Cell>{item.horasTrabalhadas}</DataTable.Cell>
               <DataTable.Cell>
                 <Chip
-                  style={[styles.statusChip, { backgroundColor: item.atrasos > 0 ? '#ff9800' : '#4caf50' }]}
+                  style={[styles.statusChip, { backgroundColor: item.atrasos > 0 ? '#f39c12' : '#4caf50' }]}
                   textStyle={styles.statusChipText}
                 >
                   {item.atrasos}

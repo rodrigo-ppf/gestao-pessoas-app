@@ -11,7 +11,7 @@ export const DesignSystem = {
     secondaryDark: '#00695c',
     
     success: '#4caf50',      // Verde sucesso
-    warning: '#ff9800',      // Laranja aviso
+    warning: '#f39c12',      // Laranja aviso
     error: '#f44336',        // Vermelho erro
     info: '#2196f3',         // Azul informação
     
@@ -31,7 +31,7 @@ export const DesignSystem = {
     
     // Status
     status: {
-      pending: '#ff9800',    // Pendente
+      pending: '#f39c12',    // Pendente
       inProgress: '#2196f3', // Em andamento
       completed: '#4caf50',  // Concluído
       cancelled: '#f44336',  // Cancelado
@@ -45,7 +45,7 @@ export const DesignSystem = {
     profiles: {
       admin_sistema: '#f44336',    // Admin sistema - vermelho
       dono_empresa: '#9c27b0',     // Dono empresa - roxo
-      lider: '#ff9800',            // Líder - laranja
+      lider: '#f39c12',            // Líder - laranja
       colaborador: '#4caf50',      // Colaborador - verde
     }
   },

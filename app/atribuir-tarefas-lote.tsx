@@ -1,8 +1,8 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService, { Tarefa } from '@/src/services/MockDataService';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, Modal, Paragraph, Portal, Title } from 'react-native-paper';
 
@@ -58,7 +58,7 @@ export default function AtribuirTarefasLoteScreen() {
       case 'Concluída':
         return '#4caf50';
       case 'Em Andamento':
-        return '#ff9800';
+        return '#3498db';
       case 'Pendente':
         return '#f44336';
       default:
@@ -71,7 +71,7 @@ export default function AtribuirTarefasLoteScreen() {
       case 'Alta':
         return '#f44336';
       case 'Média':
-        return '#ff9800';
+        return '#f39c12';
       case 'Baixa':
         return '#4caf50';
       default:
@@ -182,10 +182,9 @@ export default function AtribuirTarefasLoteScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Atribuir Tarefas em Lote" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Atribuir Tarefas em Lote</Title>
           <Paragraph>Selecione as tarefas e atribua a um responsável</Paragraph>
         </View>
 
@@ -362,23 +361,16 @@ export default function AtribuirTarefasLoteScreen() {
           </View>
         </Modal>
       </Portal>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
   content: {
     flex: 1,
   },
   header: {
     padding: 20,
-    backgroundColor: '#1976d2',
   },
   formCard: {
     margin: 16,

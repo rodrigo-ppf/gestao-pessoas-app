@@ -21,7 +21,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const [stats, setStats] = useState({
     funcionarios: 0,
-    lideres: 0,
+    gestores: 0,
     tarefas: 0,
     empresas: 0,
   });
@@ -33,13 +33,13 @@ export default function HomeScreen() {
   const loadStats = async () => {
     try {
       const funcionarios = await MockDataService.getColaboradores();
-      const lideres = await MockDataService.getLideres();
+      const gestores = await MockDataService.getGestores();
       const tarefas = await MockDataService.getTarefas();
       const empresas = await MockDataService.getEmpresas();
       
       setStats({
         funcionarios: funcionarios.length,
-        lideres: lideres.length,
+        gestores: gestores.length,
         tarefas: tarefas.length,
         empresas: empresas.length,
       });
@@ -54,8 +54,8 @@ export default function HomeScreen() {
         return 'Admin Sistema';
       case 'dono_empresa':
         return 'Dono da Empresa';
-      case 'lider':
-        return 'Líder';
+      case 'gestor':
+        return 'Gestor';
       case 'colaborador':
         return 'Colaborador';
       default:
@@ -125,8 +125,8 @@ export default function HomeScreen() {
           
           <Surface style={styles.statCard} elevation={1}>
             <UniversalIcon name="account-tie" size={24} color={DesignSystem.colors.secondary} />
-            <Text style={styles.statNumber}>{stats.lideres}</Text>
-            <Text style={styles.statLabel}>Líderes</Text>
+            <Text style={styles.statNumber}>{stats.gestores}</Text>
+            <Text style={styles.statLabel}>Gestores</Text>
           </Surface>
           
           <Surface style={styles.statCard} elevation={1}>

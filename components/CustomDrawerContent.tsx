@@ -1,6 +1,5 @@
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { router } from 'expo-router';
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Avatar, Divider, Text, useTheme } from 'react-native-paper';
 
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     fontWeight: 'bold',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8f9fa',
   },
   drawerItem: {
     marginHorizontal: 8,

@@ -22,6 +22,19 @@ const getStorageItem = async (key: string): Promise<string | null> => {
   }
 };
 
+// Função para limpar todos os dados (compatível com web e mobile)
+const clearAllStorage = async (): Promise<void> => {
+  if (isWeb) {
+    console.log('Limpando localStorage...');
+    localStorage.clear();
+    console.log('localStorage limpo');
+  } else {
+    console.log('Limpando AsyncStorage...');
+    await AsyncStorage.clear();
+    console.log('AsyncStorage limpo');
+  }
+};
+
 export interface Empresa {
   id: string;
   nome: string;
@@ -30,6 +43,7 @@ export interface Empresa {
   endereco: string;
   telefone: string;
   email: string;
+  responsavel: string; // Email do responsável pela empresa
   dataCadastro: string;
   ativa: boolean;
   emailVerificado: boolean;
@@ -41,15 +55,16 @@ export interface Usuario {
   nome: string;
   email: string;
   senha: string;
-  perfil: 'admin_sistema' | 'dono_empresa' | 'lider' | 'funcionario';
+  perfil: 'admin_sistema' | 'admin_empresa' | 'dono_empresa' | 'gestor' | 'funcionario';
   empresaId: string;
+  empresasAcesso?: string[]; // IDs das empresas que o admin_empresa pode acessar
   departamento?: string;
   cargo?: string;
   avatar?: string;
   dataCadastro: string;
   ativo: boolean;
-  liderId?: string; // ID do líder (para funcionários)
-  equipe?: string[]; // IDs dos funcionários (para líderes)
+  gestorId?: string; // ID do gestor (para funcionários)
+  equipe?: string[]; // IDs dos funcionários (para gestores)
   preferencias?: {
     mostrarDashboard?: boolean;
   };
@@ -81,6 +96,33 @@ export interface Tarefa {
   dataPrazo?: string;
   dataConclusao?: string;
   historico?: HistoricoTarefa[];
+  observacoes?: ObservacaoTarefa[];
+}
+
+export interface SolicitacaoFerias {
+  id: string;
+  colaboradorId: string;
+  colaboradorNome: string;
+  colaboradorCargo?: string;
+  dataInicio: string;
+  dataFim: string;
+  diasSolicitados: number;
+  observacoes?: string;
+  status: 'pendente' | 'aprovado' | 'rejeitado';
+  dataSolicitacao: string;
+  aprovadoPor?: string;
+  dataAprovacao?: string;
+  motivoRejeicao?: string;
+  empresaId: string;
+}
+
+export interface ObservacaoTarefa {
+  id: string;
+  tarefaId: string;
+  usuarioId: string;
+  usuarioNome: string;
+  observacao: string;
+  dataCriacao: string;
 }
 
 export interface PontoRegistro {
@@ -111,6 +153,7 @@ class MockDataService {
   private usuarios: Usuario[] = [];
   private tarefas: Tarefa[] = [];
   private historicoTarefas: HistoricoTarefa[] = [];
+  private observacoesTarefas: ObservacaoTarefa[] = [];
   private pontos: PontoRegistro[] = [];
   private ferias: FeriasSolicitacao[] = [];
 
@@ -181,12 +224,29 @@ class MockDataService {
       cnpj: '00.000.000/0001-00',
       endereco: 'Rua Demo, 123',
       telefone: '(11) 99999-9999',
-      email: 'contato@demo.com',
+      email: '', // Empresa não tem email próprio
+      responsavel: 'dono@empresa.com',
       dataCadastro: new Date().toISOString(),
       ativa: true,
       emailVerificado: true
     };
     console.log('MockDataService: Empresa padrão criada:', empresaPadrao);
+
+    // Criar segunda empresa para teste
+    const empresaSegunda: Empresa = {
+      id: '2',
+      nome: 'Empresa Teste',
+      codigo: 'TEST001',
+      cnpj: '11.111.111/0001-11',
+      endereco: 'Av. Teste, 456',
+      telefone: '(11) 88888-8888',
+      email: '', // Empresa não tem email próprio
+      responsavel: 'dono@empresa.com', // Mesmo responsável para testar múltiplas empresas
+      dataCadastro: new Date().toISOString(),
+      ativa: true,
+      emailVerificado: true
+    };
+    console.log('MockDataService: Segunda empresa criada:', empresaSegunda);
 
     // Criar admin do sistema
     const adminSistema: Usuario = {
@@ -220,7 +280,7 @@ class MockDataService {
     };
     console.log('MockDataService: Dono empresa criado:', donoEmpresa);
 
-    this.empresas = [empresaPadrao];
+    this.empresas = [empresaPadrao, empresaSegunda];
     this.usuarios = [adminSistema, donoEmpresa];
     
     console.log('MockDataService: Arrays definidos. Empresas:', this.empresas.length, 'Usuários:', this.usuarios.length);
@@ -367,16 +427,16 @@ class MockDataService {
     return usuariosFiltrados;
   }
 
-  public getLideres(): Usuario[] {
-    return this.usuarios.filter(u => u.perfil === 'lider' && u.ativo);
+  public getGestores(): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'gestor' && u.ativo);
   }
 
   public getColaboradores(): Usuario[] {
     return this.usuarios.filter(u => u.perfil === 'funcionario' && u.ativo);
   }
 
-  public getLideresByEmpresa(empresaId: string): Usuario[] {
-    return this.usuarios.filter(u => u.perfil === 'lider' && u.empresaId === empresaId && u.ativo);
+  public getGestoresByEmpresa(empresaId: string): Usuario[] {
+    return this.usuarios.filter(u => u.perfil === 'gestor' && u.empresaId === empresaId && u.ativo);
   }
 
   public getColaboradoresByEmpresa(empresaId: string): Usuario[] {
@@ -605,6 +665,65 @@ class MockDataService {
       this.tarefas.splice(index, 1);
       // Remover histórico da tarefa
       this.historicoTarefas = this.historicoTarefas.filter(h => h.tarefaId !== tarefaId);
+      // Remover observações da tarefa
+      this.observacoesTarefas = this.observacoesTarefas.filter(o => o.tarefaId !== tarefaId);
+      await this.saveData();
+      return true;
+    }
+    return false;
+  }
+
+  // Métodos para Observações de Tarefas
+  public async adicionarObservacaoTarefa(
+    tarefaId: string, 
+    usuarioId: string, 
+    observacao: string
+  ): Promise<ObservacaoTarefa | null> {
+    const tarefa = this.tarefas.find(t => t.id === tarefaId);
+    if (!tarefa) return null;
+
+    const usuario = this.usuarios.find(u => u.id === usuarioId);
+    if (!usuario) return null;
+
+    const novaObservacao: ObservacaoTarefa = {
+      id: `obs-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      tarefaId,
+      usuarioId,
+      usuarioNome: usuario.nome,
+      observacao,
+      dataCriacao: new Date().toISOString()
+    };
+
+    this.observacoesTarefas.push(novaObservacao);
+    
+    // Inicializar array de observações se não existir
+    if (!tarefa.observacoes) {
+      tarefa.observacoes = [];
+    }
+    tarefa.observacoes.push(novaObservacao);
+
+    await this.saveData();
+    return novaObservacao;
+  }
+
+  public getObservacoesTarefa(tarefaId: string): ObservacaoTarefa[] {
+    return this.observacoesTarefas
+      .filter(o => o.tarefaId === tarefaId)
+      .sort((a, b) => new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime());
+  }
+
+  public async removerObservacaoTarefa(observacaoId: string): Promise<boolean> {
+    const index = this.observacoesTarefas.findIndex(o => o.id === observacaoId);
+    if (index !== -1) {
+      const observacao = this.observacoesTarefas[index];
+      this.observacoesTarefas.splice(index, 1);
+      
+      // Remover da tarefa também
+      const tarefa = this.tarefas.find(t => t.id === observacao.tarefaId);
+      if (tarefa && tarefa.observacoes) {
+        tarefa.observacoes = tarefa.observacoes.filter(o => o.id !== observacaoId);
+      }
+      
       await this.saveData();
       return true;
     }
@@ -701,15 +820,92 @@ class MockDataService {
     return this.ferias.filter(f => f.empresaId === empresaId);
   }
 
+  // Métodos para Solicitações de Férias (nova implementação)
+  public async getSolicitacoesFerias(): Promise<SolicitacaoFerias[]> {
+    const data = await getStorageItem('solicitacoesFerias');
+    if (data) {
+      return JSON.parse(data);
+    }
+    return [];
+  }
+
+  public async salvarSolicitacaoFerias(solicitacao: SolicitacaoFerias): Promise<void> {
+    const solicitacoes = await this.getSolicitacoesFerias();
+    const index = solicitacoes.findIndex(s => s.id === solicitacao.id);
+    
+    if (index >= 0) {
+      solicitacoes[index] = solicitacao;
+    } else {
+      solicitacoes.push(solicitacao);
+    }
+    
+    await setStorageItem('solicitacoesFerias', JSON.stringify(solicitacoes));
+  }
+
+  public async atualizarSolicitacaoFerias(solicitacao: SolicitacaoFerias): Promise<void> {
+    await this.salvarSolicitacaoFerias(solicitacao);
+  }
+
+  public async getSolicitacoesFeriasByColaborador(colaboradorId: string): Promise<SolicitacaoFerias[]> {
+    const solicitacoes = await this.getSolicitacoesFerias();
+    return solicitacoes.filter(s => s.colaboradorId === colaboradorId);
+  }
+
+  public async getSolicitacoesFeriasByEmpresa(empresaId: string): Promise<SolicitacaoFerias[]> {
+    const solicitacoes = await this.getSolicitacoesFerias();
+    return solicitacoes.filter(s => s.empresaId === empresaId);
+  }
+
+  // Métodos para verificar múltiplas empresas por responsável
+  public getEmpresasByResponsavel(emailResponsavel: string): Empresa[] {
+    return this.empresas.filter(empresa => empresa.responsavel === emailResponsavel);
+  }
+
+  public hasMultipleEmpresas(emailResponsavel: string): boolean {
+    const empresas = this.getEmpresasByResponsavel(emailResponsavel);
+    return empresas.length > 1;
+  }
+
   // Método para resetar dados (para testes)
   public async resetData(): Promise<void> {
-    await AsyncStorage.clear();
+    console.log('MockDataService: Iniciando reset de dados...');
+    
+    // Limpar storage de forma compatível com web e mobile
+    await clearAllStorage();
+    console.log('MockDataService: Storage limpo');
+    
+    // Limpar arrays em memória
     this.empresas = [];
     this.usuarios = [];
     this.tarefas = [];
     this.pontos = [];
     this.ferias = [];
-    await this.initializeDefaultData();
+    console.log('MockDataService: Arrays em memória limpos');
+    
+    // Aguardar um pouco para garantir que o storage foi limpo
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Forçar criação de dados padrão (ignorando verificação de existência)
+    console.log('MockDataService: Criando dados padrão...');
+    await this.createDefaultData();
+    console.log('MockDataService: Dados padrão criados');
+    
+    // Marcar como inicializado
+    await setStorageItem('mockDataInitialized', 'true');
+    console.log('MockDataService: Reset concluído');
+    
+    // Verificar se os dados foram criados corretamente
+    console.log('MockDataService: Verificando dados criados:');
+    console.log('- Empresas:', this.empresas.length);
+    console.log('- Usuários:', this.usuarios.length);
+    console.log('- Tarefas:', this.tarefas.length);
+    
+    // Verificar se os dados foram salvos no storage
+    const empresasSalvas = await getStorageItem('empresas');
+    const usuariosSalvos = await getStorageItem('usuarios');
+    console.log('MockDataService: Dados salvos no storage:');
+    console.log('- Empresas salvas:', empresasSalvas ? 'Sim' : 'Não');
+    console.log('- Usuários salvos:', usuariosSalvos ? 'Sim' : 'Não');
   }
 }
 

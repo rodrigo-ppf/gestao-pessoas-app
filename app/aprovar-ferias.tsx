@@ -37,77 +37,18 @@ export default function AprovarFeriasScreen() {
 
   const carregarSolicitacoes = async () => {
     try {
-      // Simular dados de solicitações de férias
-      const solicitacoesSimuladas: SolicitacaoFerias[] = [
-        {
-          id: '1',
-          colaboradorId: '1',
-          colaboradorNome: 'João Silva',
-          colaboradorCargo: 'Desenvolvedor',
-          dataInicio: '15/01/2025',
-          dataFim: '29/01/2025',
-          diasSolicitados: 15,
-          observacoes: 'Férias de verão',
-          status: 'pendente',
-          dataSolicitacao: '10/12/2024'
-        },
-        {
-          id: '2',
-          colaboradorId: '2',
-          colaboradorNome: 'Ana Costa',
-          colaboradorCargo: 'Analista',
-          dataInicio: '10/03/2025',
-          dataFim: '24/03/2025',
-          diasSolicitados: 15,
-          observacoes: 'Viagem familiar',
-          status: 'pendente',
-          dataSolicitacao: '05/01/2025'
-        },
-        {
-          id: '3',
-          colaboradorId: '3',
-          colaboradorNome: 'Pedro Oliveira',
-          colaboradorCargo: 'Designer',
-          dataInicio: '05/02/2025',
-          dataFim: '19/02/2025',
-          diasSolicitados: 15,
-          observacoes: 'Carnaval',
-          status: 'pendente',
-          dataSolicitacao: '20/12/2024'
-        },
-        {
-          id: '4',
-          colaboradorId: '4',
-          colaboradorNome: 'Maria Santos',
-          colaboradorCargo: 'Gestora',
-          dataInicio: '20/07/2025',
-          dataFim: '03/08/2025',
-          diasSolicitados: 15,
-          observacoes: 'Férias de inverno',
-          status: 'aprovado',
-          dataSolicitacao: '15/06/2025',
-          aprovadoPor: 'Carlos Lima (Gestor)',
-          dataAprovacao: '18/06/2025'
-        },
-        {
-          id: '5',
-          colaboradorId: '5',
-          colaboradorNome: 'Carlos Lima',
-          colaboradorCargo: 'Coordenador',
-          dataInicio: '10/12/2024',
-          dataFim: '24/12/2024',
-          diasSolicitados: 15,
-          observacoes: 'Férias de fim de ano',
-          status: 'rejeitado',
-          dataSolicitacao: '01/11/2024',
-          aprovadoPor: 'Ana Costa (Gestora)',
-          dataAprovacao: '05/11/2024',
-          motivoRejeicao: 'Período de alta demanda'
-        }
-      ];
-      setSolicitacoes(solicitacoesSimuladas);
+      // Carregar dados reais do localStorage
+      const solicitacoesSalvas = await MockDataService.getSolicitacoesFerias();
+      
+      // Filtrar apenas solicitações da empresa do usuário
+      const solicitacoesDaEmpresa = solicitacoesSalvas.filter(solicitacao => 
+        solicitacao.empresaId === user?.empresaId
+      );
+      
+      setSolicitacoes(solicitacoesDaEmpresa);
     } catch (error) {
       console.error('Erro ao carregar solicitações:', error);
+      setSolicitacoes([]);
     }
   };
 
@@ -156,6 +97,10 @@ export default function AprovarFeriasScreen() {
         dataAprovacao: formatarData(new Date())
       };
 
+      // Salvar no localStorage
+      await MockDataService.atualizarSolicitacaoFerias(solicitacaoAtualizada);
+      
+      // Atualizar estado local
       setSolicitacoes(prev => 
         prev.map(s => s.id === solicitacao.id ? solicitacaoAtualizada : s)
       );
@@ -187,6 +132,10 @@ export default function AprovarFeriasScreen() {
         motivoRejeicao: motivoRejeicao.trim()
       };
 
+      // Salvar no localStorage
+      await MockDataService.atualizarSolicitacaoFerias(solicitacaoAtualizada);
+      
+      // Atualizar estado local
       setSolicitacoes(prev => 
         prev.map(s => s.id === solicitacao.id ? solicitacaoAtualizada : s)
       );
@@ -225,6 +174,13 @@ export default function AprovarFeriasScreen() {
                 return solicitacao;
               });
 
+              // Salvar todas as atualizações no localStorage
+              for (const solicitacao of solicitacoesAtualizadas) {
+                if (solicitacao.status === 'aprovado' && solicitacao.aprovadoPor?.includes(user?.nome || '')) {
+                  await MockDataService.atualizarSolicitacaoFerias(solicitacao);
+                }
+              }
+              
               setSolicitacoes(solicitacoesAtualizadas);
               
               const totalAprovadas = solicitacoesAtualizadas.filter(s => s.status === 'aprovado' && s.aprovadoPor?.includes(user?.nome || '')).length;

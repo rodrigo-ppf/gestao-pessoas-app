@@ -255,7 +255,7 @@ export default function AprovarPontosScreen() {
         if (registro.id === registroSelecionado.id) {
           return {
             ...registro,
-            status: aprovado ? 'aprovado' : 'rejeitado',
+            status: aprovado ? 'aprovado' as const : 'rejeitado' as const,
             observacoes: observacoes || undefined,
             aprovadoPor: user?.nome || 'Usuário',
             dataAprovacao: new Date().toLocaleDateString('pt-BR')
@@ -784,13 +784,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     minHeight: 200,
   },
-  colaboradorNome: {
+  modalColaboradorNome: {
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'left',
     writingDirection: 'ltr',
   },
-  colaboradorCargo: {
+  modalColaboradorCargo: {
     fontSize: 12,
     color: '#666',
     textAlign: 'left',
@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     writingDirection: 'ltr',
   },
-  registroInfo: {
+  modalRegistroInfo: {
     marginBottom: 20,
     padding: 16,
     backgroundColor: '#f5f5f5',
@@ -983,7 +983,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     writingDirection: 'ltr',
   },
-  colaboradorCargo: {
+  modalColaboradorCargo: {
     fontSize: 12,
     color: '#666',
     textAlign: 'left',

@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '@/src/contexts/AuthContext';
@@ -23,9 +23,21 @@ export default function RootLayout() {
     // });
   }, []);
 
+  // Tema customizado com cor primária azul
+  const customTheme = {
+    ...MD3LightTheme,
+    colors: {
+      ...MD3LightTheme.colors,
+      primary: '#1976d2',
+      primaryContainer: '#e3f2fd',
+      secondary: '#2196f3',
+      secondaryContainer: '#e1f5fe',
+    },
+  };
+
   return (
     <AuthProvider>
-      <PaperProvider>
+      <PaperProvider theme={customTheme}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
           <Stack.Screen name="login" options={{ headerShown: false }} />

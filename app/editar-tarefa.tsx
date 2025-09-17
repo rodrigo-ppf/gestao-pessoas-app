@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import TaskHistory from '@/components/TaskHistory';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -230,19 +230,18 @@ export default function EditarTarefaScreen() {
 
   if (!tarefa) {
     return (
-      <View style={styles.container}>
+      <MainLayout title="Editar Tarefa" showBackButton={true}>
         <View style={styles.loadingContainer}>
           <Title>Carregando...</Title>
         </View>
-      </View>
+      </MainLayout>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Editar Tarefa" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Editar Tarefa</Title>
           <Paragraph>Edite as informações da tarefa</Paragraph>
         </View>
 
@@ -471,17 +470,11 @@ export default function EditarTarefaScreen() {
           </View>
         </Modal>
       </Portal>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -492,19 +485,18 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    backgroundColor: '#1976d2',
   },
   formCard: {
     margin: 16,
     elevation: 2,
   },
   changesIndicator: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#fef9e7',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: '#f39c12',
   },
   changesText: {
     color: '#856404',

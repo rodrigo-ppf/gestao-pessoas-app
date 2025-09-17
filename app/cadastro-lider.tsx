@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Chip, Divider, List, Paragraph, TextInput, Title } from 'react-native-paper';
 
-export default function CadastroLiderScreen() {
+export default function CadastroGestorScreen() {
   const { user } = useAuth();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -17,7 +17,7 @@ export default function CadastroLiderScreen() {
   const [departamento, setDepartamento] = useState('');
   const [cargo, setCargo] = useState('');
   const [loading, setLoading] = useState(false);
-  const [lideres, setLideres] = useState<any[]>([]);
+  const [gestores, setGestores] = useState<any[]>([]);
   const { t } = useTranslation();
   
   // Estados para feedback visual
@@ -29,7 +29,7 @@ export default function CadastroLiderScreen() {
   const [confirmarSenhaVisible, setConfirmarSenhaVisible] = useState(false);
 
   useEffect(() => {
-    carregarLideres();
+    carregarGestores();
   }, []);
 
   // Função para validar senha em tempo real
@@ -104,14 +104,14 @@ export default function CadastroLiderScreen() {
     setConfirmarSenhaVisible(false);
   };
 
-  const carregarLideres = () => {
-    console.log('CadastroLider: Carregando líderes...');
+  const carregarGestores = () => {
+    console.log('CadastroGestor: Carregando gestores...');
     if (user?.empresaId) {
       const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-      console.log('CadastroLider: Usuários da empresa:', usuarios);
-      const lideresEmpresa = usuarios.filter(u => u.perfil === 'lider');
-      console.log('CadastroLider: Líderes encontrados:', lideresEmpresa);
-      setLideres(lideresEmpresa);
+      console.log('CadastroGestor: Usuários da empresa:', usuarios);
+      const gestoresEmpresa = usuarios.filter(u => u.perfil === 'gestor');
+      console.log('CadastroGestor: Gestores encontrados:', gestoresEmpresa);
+      setGestores(gestoresEmpresa);
     }
   };
 
@@ -148,14 +148,14 @@ export default function CadastroLiderScreen() {
     setLoading(true);
 
     try {
-      console.log('CadastroLider: Criando novo líder...');
-      console.log('Dados do líder:', { nome, email, departamento, cargo, empresaId: user?.empresaId });
+      console.log('CadastroGestor: Criando novo gestor...');
+      console.log('Dados do gestor:', { nome, email, departamento, cargo, empresaId: user?.empresaId });
       
-      const novoLider = await MockDataService.createUsuario({
+      const novoGestor = await MockDataService.createUsuario({
         nome,
         email,
         senha,
-        perfil: 'lider',
+        perfil: 'gestor',
         empresaId: user?.empresaId || '',
         departamento,
         cargo,
@@ -164,17 +164,17 @@ export default function CadastroLiderScreen() {
         equipe: []
       });
 
-      console.log('CadastroLider: Líder criado:', novoLider);
+      console.log('CadastroGestor: Gestor criado:', novoGestor);
 
       // Limpar formulário
       limparFormulario();
 
-      // Atualizar lista de líderes
-      carregarLideres();
+      // Atualizar lista de gestores
+      carregarGestores();
 
       Alert.alert(
         '✅ Sucesso!',
-        `Líder ${novoLider.nome} cadastrado com sucesso!\n\nDeseja cadastrar outro líder?`,
+        `Gestor ${novoGestor.nome} cadastrado com sucesso!\n\nDeseja cadastrar outro gestor?`,
         [
           {
             text: 'Voltar ao Menu',
@@ -223,11 +223,10 @@ export default function CadastroLiderScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Cadastrar Gestor" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Cadastrar Líder</Title>
-          <Paragraph>Cadastre um novo líder para gerenciar uma equipe</Paragraph>
+          <Paragraph>Cadastre um novo gestor para gerenciar uma equipe</Paragraph>
         </View>
 
         <Card style={styles.formCard}>
@@ -338,44 +337,44 @@ export default function CadastroLiderScreen() {
         <Card style={styles.listCard}>
           <Card.Content>
             <Title style={styles.listTitle}>
-              👥 Líderes Cadastrados ({lideres.length})
+              👥 Gestores Cadastrados ({gestores.length})
             </Title>
             
-            {lideres.length === 0 ? (
+            {gestores.length === 0 ? (
               <View style={styles.emptyState}>
                 <Paragraph style={styles.emptyText}>
-                  Nenhum líder cadastrado ainda.{'\n'}
-                  Cadastre o primeiro líder para começar!
+                  Nenhum gestor cadastrado ainda.{'\n'}
+                  Cadastre o primeiro gestor para começar!
                 </Paragraph>
               </View>
             ) : (
-              <View style={styles.leadersList}>
-                {lideres.map((lider, index) => (
-                  <View key={lider.id}>
+              <View style={styles.gestoresList}>
+                {gestores.map((gestor, index) => (
+                  <View key={gestor.id}>
                     <List.Item
-                      title={lider.nome}
-                      description={`${lider.cargo} • ${lider.departamento}`}
+                      title={gestor.nome}
+                      description={`${gestor.cargo} • ${gestor.departamento}`}
                       left={() => (
                         <Avatar.Text 
                           size={40} 
-                          label={lider.nome.charAt(0).toUpperCase()}
+                          label={gestor.nome.charAt(0).toUpperCase()}
                           style={styles.avatar}
                         />
                       )}
                       right={() => (
-                        <View style={styles.leaderInfo}>
+                        <View style={styles.gestorInfo}>
                           <Chip 
                             mode="outlined" 
                             compact
                             style={styles.chip}
                           >
-                            {lider.equipe?.length || 0} funcionários
+                            {gestor.equipe?.length || 0} funcionários
                           </Chip>
                         </View>
                       )}
                       style={styles.listItem}
                     />
-                    {index < lideres.length - 1 && <Divider />}
+                    {index < gestores.length - 1 && <Divider />}
                   </View>
                 ))}
               </View>
@@ -383,9 +382,7 @@ export default function CadastroLiderScreen() {
           </Card.Content>
         </Card>
       </ScrollView>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
@@ -457,7 +454,7 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
   },
-  leadersList: {
+  gestoresList: {
     marginTop: 8,
   },
   listItem: {

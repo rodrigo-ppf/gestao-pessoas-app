@@ -38,7 +38,7 @@ export default function MainLayout({
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Surface style={[styles.header, { backgroundColor: theme.colors.primary }]} elevation={2}>
+      <Surface style={[styles.header, { backgroundColor: '#1976d2' }]} elevation={2}>
         <View style={styles.headerLeft}>
           {showBackButton && (
             <IconButton
@@ -92,7 +92,7 @@ export default function MainLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     width: isSmallScreen ? 280 : 300,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
     borderRightWidth: 1,
-    borderRightColor: '#e0e0e0',
+    borderRightColor: '#e9ecef',
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.1,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   mainContentWithMenu: {
     marginLeft: isSmallScreen ? 280 : 300,

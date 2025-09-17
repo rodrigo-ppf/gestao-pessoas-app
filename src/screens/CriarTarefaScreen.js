@@ -25,7 +25,7 @@ export default function CriarTarefaScreen({ navigation }) {
 
   const prioridades = [
     { id: 'baixa', label: 'Baixa', color: '#4caf50' },
-    { id: 'media', label: 'Média', color: '#ff9800' },
+    { id: 'media', label: 'Média', color: '#f39c12' },
     { id: 'alta', label: 'Alta', color: '#f44336' }
   ];
 

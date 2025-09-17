@@ -15,7 +15,7 @@ export default function GerenciarEquipeScreen() {
   const { t, getCurrentLanguage, changeLanguage } = useTranslation();
   
   // Estados principais
-  const [lideres, setLideres] = useState<any[]>([]);
+  const [gestores, setGestores] = useState<any[]>([]);
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
   const [allMembers, setAllMembers] = useState<any[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<any[]>([]);
@@ -28,7 +28,7 @@ export default function GerenciarEquipeScreen() {
   // Estados de modais
   const [menuVisible, setMenuVisible] = useState<string | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [liderToDelete, setLiderToDelete] = useState<any>(null);
+  const [gestorToDelete, setGestorToDelete] = useState<any>(null);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [funcionarioToAssign, setFuncionarioToAssign] = useState<any>(null);
   const [bulkAssignModalVisible, setBulkAssignModalVisible] = useState(false);
@@ -51,19 +51,19 @@ export default function GerenciarEquipeScreen() {
 
       console.log('Carregando dados para empresa:', user.empresaId);
       
-      const lideresList = MockDataService.getLideresByEmpresa(user.empresaId);
+      const gestoresList = MockDataService.getGestoresByEmpresa(user.empresaId);
       const funcionariosList = MockDataService.getColaboradoresByEmpresa(user.empresaId);
       
-      console.log('Líderes encontrados:', lideresList);
+      console.log('Gestores encontrados:', gestoresList);
       console.log('Colaboradores encontrados:', funcionariosList);
       
       // Combinar todos os membros da equipe
       const members = [
-        ...lideresList.map(l => ({ ...l, perfil: 'lider', status: 'ativo' })),
+        ...gestoresList.map(g => ({ ...g, perfil: 'gestor', status: 'ativo' })),
         ...funcionariosList.map(f => ({ ...f, perfil: 'colaborador', status: 'ativo' }))
       ];
       
-      setLideres(lideresList);
+      setGestores(gestoresList);
       setFuncionarios(funcionariosList);
       setAllMembers(members);
       setFilteredMembers(members);
@@ -128,15 +128,15 @@ export default function GerenciarEquipeScreen() {
   const getPerfilColor = (perfil: string) => {
     switch (perfil) {
       case 'admin_sistema':
-        return '#f44336';
+        return '#e74c3c';
       case 'dono_empresa':
-        return '#9c27b0';
-      case 'lider':
-        return '#ff9800';
+        return '#8e44ad';
+      case 'gestor':
+        return '#3498db';
       case 'funcionario':
-        return '#4caf50';
+        return '#27ae60';
       default:
-        return '#9e9e9e';
+        return '#95a5a6';
     }
   };
 
@@ -146,8 +146,8 @@ export default function GerenciarEquipeScreen() {
         return 'Admin Sistema';
       case 'dono_empresa':
         return 'Dono da Empresa';
-      case 'lider':
-        return 'Líder';
+      case 'gestor':
+        return 'Gestor';
       case 'funcionario':
         return 'Colaborador';
       default:
@@ -155,49 +155,49 @@ export default function GerenciarEquipeScreen() {
     }
   };
 
-  const getFuncionariosDoLider = (liderId: string) => {
-    return funcionarios.filter(f => f.liderId === liderId);
+  const getFuncionariosDoGestor = (gestorId: string) => {
+    return funcionarios.filter(f => f.gestorId === gestorId);
   };
 
-  const handleEditarLider = (lider: any) => {
+  const handleEditarGestor = (gestor: any) => {
     setMenuVisible(null);
-    router.push(`/editar-lider?liderId=${lider.id}`);
+    router.push(`/editar-gestor?gestorId=${gestor.id}`);
   };
 
-  const handleExcluirLider = (lider: any) => {
+  const handleExcluirGestor = (gestor: any) => {
     console.log('=== ABRINDO MODAL DE EXCLUSÃO ===');
-    console.log('Líder recebido:', lider);
+    console.log('Gestor recebido:', gestor);
     console.log('Idioma atual:', t('common.cancel')); // Teste de tradução
-    console.log('Título deleteLeader:', t('leader.deleteLeader'));
+    console.log('Título deleteGestor:', t('gestor.deleteGestor'));
     
-    setLiderToDelete(lider);
+    setGestorToDelete(gestor);
     setDeleteModalVisible(true);
   };
 
   const confirmarExclusao = async () => {
-    if (!liderToDelete) return;
+    if (!gestorToDelete) return;
     
     console.log('=== CONFIRMANDO EXCLUSÃO ===');
-    console.log('Líder a ser excluído:', liderToDelete);
+    console.log('Gestor a ser excluído:', gestorToDelete);
     
     try {
-      const funcionariosDoLider = getFuncionariosDoLider(liderToDelete.id);
+      const funcionariosDoGestor = getFuncionariosDoGestor(gestorToDelete.id);
       
-      // Desassociar funcionários do líder
-      if (funcionariosDoLider.length > 0) {
-        for (const funcionario of funcionariosDoLider) {
-          await MockDataService.updateUsuario(funcionario.id, { liderId: undefined });
+      // Desassociar funcionários do gestor
+      if (funcionariosDoGestor.length > 0) {
+        for (const funcionario of funcionariosDoGestor) {
+          await MockDataService.updateUsuario(funcionario.id, { gestorId: undefined });
         }
       }
       
-      // Excluir o líder
-      const sucesso = await MockDataService.deleteUsuario(liderToDelete.id);
+      // Excluir o gestor
+      const sucesso = await MockDataService.deleteUsuario(gestorToDelete.id);
       
       if (sucesso) {
         // Recarregar dados
         carregarDados();
         setDeleteModalVisible(false);
-        setLiderToDelete(null);
+        setGestorToDelete(null);
         
         // Mostrar sucesso usando Alert (que funciona para mensagens simples)
         Alert.alert(t('common.success'), t('leader.leaderDeleted'));
@@ -205,50 +205,50 @@ export default function GerenciarEquipeScreen() {
         Alert.alert(t('common.error'), t('leader.leaderDeleteError'));
       }
     } catch (error) {
-      console.error('Erro ao excluir líder:', error);
+      console.error('Erro ao excluir gestor:', error);
       Alert.alert(t('common.error'), t('leader.leaderDeleteError'));
     }
   };
 
   const cancelarExclusao = () => {
     setDeleteModalVisible(false);
-    setLiderToDelete(null);
+    setGestorToDelete(null);
   };
 
-  const handleAssociarLider = (funcionario: any) => {
-    console.log('=== ASSOCIANDO FUNCIONÁRIO A LÍDER ===');
+  const handleAssociarGestor = (funcionario: any) => {
+    console.log('=== ASSOCIANDO FUNCIONÁRIO A GESTOR ===');
     console.log('Funcionário:', funcionario);
     
     setFuncionarioToAssign(funcionario);
     setAssignModalVisible(true);
   };
 
-  const confirmarAssociacao = async (liderId: string) => {
+  const confirmarAssociacao = async (gestorId: string) => {
     if (!funcionarioToAssign) return;
     
     console.log('=== CONFIRMANDO ASSOCIAÇÃO ===');
     console.log('Funcionário:', funcionarioToAssign.nome);
-    console.log('Líder ID:', liderId);
+    console.log('Gestor ID:', gestorId);
     
     try {
-      const sucesso = await MockDataService.updateUsuario(funcionarioToAssign.id, { liderId });
+      const sucesso = await MockDataService.updateUsuario(funcionarioToAssign.id, { gestorId });
       
       if (sucesso) {
         carregarDados();
         setAssignModalVisible(false);
         setFuncionarioToAssign(null);
         
-        const lider = lideres.find(l => l.id === liderId);
+        const gestor = gestores.find(l => l.id === gestorId);
         Alert.alert(
           '✅ Sucesso!', 
-          `Colaborador ${funcionarioToAssign.nome} associado ao líder ${lider?.nome} com sucesso!`
+          `Colaborador ${funcionarioToAssign.nome} associado ao gestor ${gestor?.nome} com sucesso!`
         );
       } else {
-        Alert.alert('❌ Erro', 'Erro ao associar funcionário ao líder');
+        Alert.alert('❌ Erro', 'Erro ao associar funcionário ao gestor');
       }
     } catch (error) {
       console.error('Erro ao associar funcionário:', error);
-      Alert.alert('❌ Erro', 'Erro ao associar funcionário ao líder');
+      Alert.alert('❌ Erro', 'Erro ao associar funcionário ao gestor');
     }
   };
 
@@ -286,15 +286,15 @@ export default function GerenciarEquipeScreen() {
     setBulkAssignModalVisible(true);
   };
 
-  const confirmarBulkAssign = async (liderId: string) => {
+  const confirmarBulkAssign = async (gestorId: string) => {
     try {
       for (const funcionarioId of selectedFuncionarios) {
-        await MockDataService.updateUsuario(funcionarioId, { liderId });
+        await MockDataService.updateUsuario(funcionarioId, { gestorId });
       }
       
       Alert.alert(
         'Sucesso',
-        `${selectedFuncionarios.length} funcionário(s) associado(s) ao líder com sucesso!`
+        `${selectedFuncionarios.length} funcionário(s) associado(s) ao gestor com sucesso!`
       );
       
       setBulkAssignModalVisible(false);
@@ -302,7 +302,7 @@ export default function GerenciarEquipeScreen() {
       carregarDados();
     } catch (error) {
       console.error('Erro ao associar funcionários:', error);
-      Alert.alert('Erro', 'Falha ao associar funcionários ao líder');
+      Alert.alert('Erro', 'Falha ao associar funcionários ao gestor');
     }
   };
 
@@ -360,23 +360,23 @@ export default function GerenciarEquipeScreen() {
     <MainLayout title="Gerenciar Equipe">
       <ScrollView style={styles.content}>
         <View style={styles.description}>
-          <Paragraph>Gerencie líderes e funcionários da sua empresa</Paragraph>
+          <Paragraph>Gerencie gestores e funcionários da sua empresa</Paragraph>
         </View>
 
         <View style={styles.actionsContainer}>
           <Card style={styles.actionCard}>
             <Card.Content>
-              <Title style={styles.actionTitle}>👥 Cadastrar Líder</Title>
+              <Title style={styles.actionTitle}>👥 Cadastrar Gestor</Title>
               <Paragraph style={styles.actionDescription}>
-                Cadastre um novo líder para gerenciar uma equipe
+                Cadastre um novo gestor para gerenciar uma equipe
               </Paragraph>
               <Button
                 mode="contained"
-                onPress={() => router.push('/cadastro-lider')}
+                onPress={() => router.push('/cadastro-gestor')}
                 style={styles.actionButton}
                 icon="account-plus"
               >
-                Cadastrar Líder
+                Cadastrar Gestor
               </Button>
             </Card.Content>
           </Card>
@@ -385,7 +385,7 @@ export default function GerenciarEquipeScreen() {
             <Card.Content>
               <Title style={styles.actionTitle}>👤 Cadastrar Colaborador</Title>
               <Paragraph style={styles.actionDescription}>
-                Cadastre um novo colaborador e atribua a um líder
+                Cadastre um novo colaborador e atribua a um gestor
               </Paragraph>
               <Button
                 mode="contained"
@@ -400,56 +400,56 @@ export default function GerenciarEquipeScreen() {
         </View>
 
         <View style={styles.teamContainer}>
-          <Title style={styles.sectionTitle}>👥 Líderes da Empresa</Title>
-          {lideres.length > 0 ? (
-            lideres.map((lider) => (
-              <Card key={lider.id} style={styles.teamCard}>
+          <Title style={styles.sectionTitle}>👥 Gestores da Empresa</Title>
+          {gestores.length > 0 ? (
+            gestores.map((gestor) => (
+              <Card key={gestor.id} style={styles.teamCard}>
                 <Card.Content>
                   <View style={styles.teamMemberInfo}>
                     <View style={styles.teamMemberDetails}>
                       <Title style={styles.teamMemberName}>
-                        {lider.avatar} {lider.nome}
+                        {gestor.avatar} {gestor.nome}
                       </Title>
                       <Paragraph style={styles.teamMemberEmail}>
-                        {lider.email}
+                        {gestor.email}
                       </Paragraph>
                       <Paragraph style={styles.teamMemberRole}>
-                        {lider.cargo} - {lider.departamento}
+                        {gestor.cargo} - {gestor.departamento}
                       </Paragraph>
                     </View>
                     <View style={styles.teamMemberActions}>
                       <Chip
-                        style={[styles.perfilChip, { backgroundColor: getPerfilColor(lider.perfil) }]}
+                        style={[styles.perfilChip, { backgroundColor: getPerfilColor(gestor.perfil) }]}
                         textStyle={styles.chipText}
                       >
-                        {getPerfilLabel(lider.perfil)}
+                        {getPerfilLabel(gestor.perfil)}
                       </Chip>
                       <Menu
-                        visible={menuVisible === lider.id}
+                        visible={menuVisible === gestor.id}
                         onDismiss={() => setMenuVisible(null)}
                         anchor={
                           <IconButton
                             icon="dots-vertical"
                             size={20}
-                            onPress={() => setMenuVisible(lider.id)}
+                            onPress={() => setMenuVisible(gestor.id)}
                             style={styles.menuButton}
                           />
                         }
                       >
                         <Menu.Item
-                          onPress={() => handleEditarLider(lider)}
+                          onPress={() => handleEditarGestor(gestor)}
                           title={t('common.edit')}
                           leadingIcon="pencil"
                         />
                         <Menu.Item
                           onPress={() => {
                             console.log('=== MENU ITEM EXCLUIR CLICADO ===');
-                            console.log('Líder:', lider);
+                            console.log('Gestor:', gestor);
                             // Fechar menu primeiro
                             setMenuVisible(null);
                             // Pequeno delay para garantir que o menu feche
                             setTimeout(() => {
-                              handleExcluirLider(lider);
+                              handleExcluirGestor(gestor);
                             }, 100);
                           }}
                           title={t('common.delete')}
@@ -462,9 +462,9 @@ export default function GerenciarEquipeScreen() {
                   
                   <View style={styles.teamSection}>
                     <Paragraph style={styles.teamSectionTitle}>
-                      Colaboradores sob liderança ({getFuncionariosDoLider(lider.id).length})
+                      Colaboradores sob gestão ({getFuncionariosDoGestor(gestor.id).length})
                     </Paragraph>
-                    {getFuncionariosDoLider(lider.id).map((funcionario) => (
+                    {getFuncionariosDoGestor(gestor.id).map((funcionario) => (
                       <View key={funcionario.id} style={styles.subordinateItem}>
                         <Paragraph style={styles.subordinateName}>
                           {funcionario.avatar} {funcionario.nome}
@@ -474,7 +474,7 @@ export default function GerenciarEquipeScreen() {
                         </Paragraph>
                       </View>
                     ))}
-                    {getFuncionariosDoLider(lider.id).length === 0 && (
+                    {getFuncionariosDoGestor(gestor.id).length === 0 && (
                       <Paragraph style={styles.noSubordinates}>
                         Nenhum funcionário atribuído
                       </Paragraph>
@@ -486,9 +486,9 @@ export default function GerenciarEquipeScreen() {
           ) : (
             <Card style={styles.emptyCard}>
               <Card.Content>
-                <Title style={styles.emptyTitle}>Nenhum líder cadastrado</Title>
+                <Title style={styles.emptyTitle}>Nenhum gestor cadastrado</Title>
                 <Paragraph style={styles.emptyDescription}>
-                  Cadastre líderes para organizar sua equipe
+                  Cadastre gestores para organizar sua equipe
                 </Paragraph>
               </Card.Content>
             </Card>
@@ -607,25 +607,25 @@ export default function GerenciarEquipeScreen() {
                     </View>
                   </View>
                   
-                  {funcionario.liderId ? (
+                  {funcionario.gestorId ? (
                     <View style={styles.leaderInfo}>
                       <Paragraph style={styles.leaderLabel}>
-                        Líder: {lideres.find(l => l.id === funcionario.liderId)?.nome || 'Não encontrado'}
+                        Gestor: {gestores.find(l => l.id === funcionario.gestorId)?.nome || 'Não encontrado'}
                       </Paragraph>
                     </View>
                   ) : (
                     <View style={styles.leaderInfo}>
                       <Paragraph style={styles.leaderLabel}>
-                        ⚠️ Sem líder associado
+                        ⚠️ Sem gestor associado
                       </Paragraph>
                       {!isSelectionMode && (
                         <Button
                           mode="outlined"
-                          onPress={() => handleAssociarLider(funcionario)}
+                          onPress={() => handleAssociarGestor(funcionario)}
                           style={styles.assignButton}
                           compact
                         >
-                          Associar a Líder
+                          Associar a Gestor
                         </Button>
                       )}
                     </View>
@@ -659,10 +659,10 @@ export default function GerenciarEquipeScreen() {
             </Title>
             
             <Paragraph style={styles.modalMessage}>
-              {t('leader.deleteConfirmation', { name: liderToDelete?.nome || '' })}
+              {t('leader.deleteConfirmation', { name: gestorToDelete?.nome || '' })}
             </Paragraph>
             
-            {liderToDelete && getFuncionariosDoLider(liderToDelete.id).length > 0 && (
+            {gestorToDelete && getFuncionariosDoGestor(gestorToDelete.id).length > 0 && (
               <Paragraph style={styles.modalWarning}>
                 {t('leader.employeesWillBeDisassociated')}
               </Paragraph>
@@ -694,7 +694,7 @@ export default function GerenciarEquipeScreen() {
         </Modal>
       </Portal>
 
-      {/* Modal para Associar Funcionário a Líder */}
+      {/* Modal para Associar Funcionário a Gestor */}
       <Portal>
         <Modal
           visible={assignModalVisible}
@@ -703,32 +703,32 @@ export default function GerenciarEquipeScreen() {
         >
           <View style={styles.modalContent}>
             <Title style={styles.modalTitle}>
-              Associar Colaborador a Líder
+              Associar Colaborador a Gestor
             </Title>
             
             <Paragraph style={styles.modalMessage}>
-              Selecione um líder para o colaborador {funcionarioToAssign?.nome}:
+              Selecione um gestor para o colaborador {funcionarioToAssign?.nome}:
             </Paragraph>
             
             <ScrollView style={styles.leadersList}>
-              {lideres.map((lider) => (
-                <Card key={lider.id} style={styles.leaderCard}>
+              {gestores.map((gestor) => (
+                <Card key={gestor.id} style={styles.leaderCard}>
                   <Card.Content>
                     <View style={styles.leaderCardContent}>
                       <View style={styles.leaderInfo}>
                         <Title style={styles.leaderName}>
-                          {lider.avatar} {lider.nome}
+                          {gestor.avatar} {gestor.nome}
                         </Title>
                         <Paragraph style={styles.leaderDetails}>
-                          {lider.cargo} - {lider.departamento}
+                          {gestor.cargo} - {gestor.departamento}
                         </Paragraph>
                         <Paragraph style={styles.leaderTeam}>
-                          Equipe: {getFuncionariosDoLider(lider.id).length} funcionário(s)
+                          Equipe: {getFuncionariosDoGestor(gestor.id).length} funcionário(s)
                         </Paragraph>
                       </View>
                       <Button
                         mode="contained"
-                        onPress={() => confirmarAssociacao(lider.id)}
+                        onPress={() => confirmarAssociacao(gestor.id)}
                         style={styles.selectLeaderButton}
                       >
                         Selecionar
@@ -752,7 +752,7 @@ export default function GerenciarEquipeScreen() {
         </Modal>
       </Portal>
 
-      {/* Modal para Seleção Múltipla de Líderes */}
+      {/* Modal para Seleção Múltipla de Gestores */}
       <Portal>
         <Modal
           visible={bulkAssignModalVisible}
@@ -761,35 +761,35 @@ export default function GerenciarEquipeScreen() {
         >
           <View style={styles.modalContent}>
             <Title style={styles.modalTitle}>
-              Associar {selectedFuncionarios.length} Colaborador(es) a um Líder
+              Associar {selectedFuncionarios.length} Colaborador(es) a um Gestor
             </Title>
 
             <Paragraph style={styles.modalMessage}>
-              Selecione um líder para associar os colaboradores selecionados:
+              Selecione um gestor para associar os colaboradores selecionados:
             </Paragraph>
 
             <ScrollView style={styles.leadersList}>
-              {lideres.map((lider) => (
-                <Card key={lider.id} style={styles.leaderCard}>
+              {gestores.map((gestor) => (
+                <Card key={gestor.id} style={styles.leaderCard}>
                   <Card.Content>
                     <View style={styles.leaderCardContent}>
                       <View style={styles.leaderInfo}>
                         <Title style={styles.leaderName}>
-                          {lider.avatar} {lider.nome}
+                          {gestor.avatar} {gestor.nome}
                         </Title>
                         <Paragraph style={styles.leaderDetails}>
-                          {lider.cargo} - {lider.departamento}
+                          {gestor.cargo} - {gestor.departamento}
                         </Paragraph>
                         <Paragraph style={styles.leaderTeam}>
-                          Equipe atual: {getFuncionariosDoLider(lider.id).length} funcionário(s)
+                          Equipe atual: {getFuncionariosDoGestor(gestor.id).length} funcionário(s)
                         </Paragraph>
                         <Paragraph style={styles.leaderTeam}>
-                          Nova equipe: {getFuncionariosDoLider(lider.id).length + selectedFuncionarios.length} funcionário(s)
+                          Nova equipe: {getFuncionariosDoGestor(gestor.id).length + selectedFuncionarios.length} funcionário(s)
                         </Paragraph>
                       </View>
                       <Button
                         mode="contained"
-                        onPress={() => confirmarBulkAssign(lider.id)}
+                        onPress={() => confirmarBulkAssign(gestor.id)}
                         style={styles.selectLeaderButton}
                       >
                         Associar
@@ -862,16 +862,16 @@ export default function GerenciarEquipeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   content: {
     flex: 1,
   },
   description: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e9ecef',
   },
   actionsContainer: {
     padding: 16,
@@ -897,7 +897,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     marginBottom: 16,
-    color: '#1976d2',
+    color: '#2c3e50',
+    fontWeight: '600',
   },
   teamCard: {
     marginBottom: 16,
@@ -945,9 +946,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   teamSectionTitle: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 8,
-    color: '#1976d2',
+    color: '#34495e',
   },
   subordinateItem: {
     flexDirection: 'row',
@@ -978,7 +979,7 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     elevation: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
   },
   emptyTitle: {
     fontSize: 16,
@@ -1016,11 +1017,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
     textAlign: 'center',
-    color: '#ff9800',
-    fontWeight: 'bold',
-    backgroundColor: '#fff3e0',
+    color: '#e67e22',
+    fontWeight: '600',
+    backgroundColor: '#fef9e7',
     padding: 12,
-    borderRadius: 4,
+    borderRadius: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f39c12',
   },
   modalFinal: {
     fontSize: 14,
@@ -1039,7 +1042,7 @@ const styles = StyleSheet.create({
   },
   assignButton: {
     marginTop: 8,
-    borderColor: '#ff9800',
+    borderColor: '#3498db',
   },
   leadersList: {
     maxHeight: 300,

@@ -59,64 +59,8 @@ export default function HistoricoFeriasScreen() {
     setLoading(true);
     
     try {
-      // Simular dados de histórico de férias
-      const historicoSimulado: SolicitacaoFerias[] = [
-        {
-          id: '1',
-          colaboradorId: '1',
-          colaboradorNome: 'João Silva',
-          colaboradorCargo: 'Desenvolvedor',
-          dataInicio: '15/01/2025',
-          dataFim: '29/01/2025',
-          diasSolicitados: 15,
-          observacoes: 'Férias de verão',
-          status: 'aprovado',
-          dataSolicitacao: '10/12/2024',
-          aprovadoPor: 'Maria Santos (Gestora)',
-          dataAprovacao: '12/12/2024'
-        },
-        {
-          id: '2',
-          colaboradorId: '2',
-          colaboradorNome: 'Ana Costa',
-          colaboradorCargo: 'Analista',
-          dataInicio: '10/03/2025',
-          dataFim: '24/03/2025',
-          diasSolicitados: 15,
-          observacoes: 'Viagem familiar',
-          status: 'pendente',
-          dataSolicitacao: '05/01/2025'
-        },
-        {
-          id: '3',
-          colaboradorId: '3',
-          colaboradorNome: 'Pedro Oliveira',
-          colaboradorCargo: 'Designer',
-          dataInicio: '05/02/2025',
-          dataFim: '19/02/2025',
-          diasSolicitados: 15,
-          observacoes: 'Carnaval',
-          status: 'rejeitado',
-          dataSolicitacao: '20/12/2024',
-          aprovadoPor: 'Carlos Lima (Gestor)',
-          dataAprovacao: '22/12/2024',
-          motivoRejeicao: 'Período de alta demanda'
-        },
-        {
-          id: '4',
-          colaboradorId: '1',
-          colaboradorNome: 'João Silva',
-          colaboradorCargo: 'Desenvolvedor',
-          dataInicio: '20/07/2025',
-          dataFim: '03/08/2025',
-          diasSolicitados: 15,
-          observacoes: 'Férias de inverno',
-          status: 'aprovado',
-          dataSolicitacao: '15/06/2025',
-          aprovadoPor: 'Maria Santos (Gestora)',
-          dataAprovacao: '18/06/2025'
-        }
-      ];
+      // Carregar dados reais do localStorage
+      const historicoSimulado = await MockDataService.getSolicitacoesFerias();
 
       // Filtrar por período
       const dataInicioObj = new Date(dataInicio.split('/').reverse().join('-'));
@@ -143,6 +87,11 @@ export default function HistoricoFeriasScreen() {
       if (user?.perfil === 'colaborador' || user?.perfil === 'funcionario') {
         historicoFiltrado = historicoFiltrado.filter(solicitacao => 
           solicitacao.colaboradorId === user.id || solicitacao.colaboradorNome === user.nome
+        );
+      } else {
+        // Para gestores, mostrar apenas solicitações da mesma empresa
+        historicoFiltrado = historicoFiltrado.filter(solicitacao => 
+          solicitacao.empresaId === user?.empresaId
         );
       }
 

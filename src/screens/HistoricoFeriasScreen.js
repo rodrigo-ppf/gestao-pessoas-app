@@ -107,7 +107,7 @@ export default function HistoricoFeriasScreen({ navigation }) {
   const getStatusColor = (status) => {
     switch (status) {
       case 'aprovado': return '#4caf50';
-      case 'pendente': return '#ff9800';
+      case 'pendente': return '#f39c12';
       case 'rejeitado': return '#f44336';
       default: return '#666';
     }

@@ -160,7 +160,7 @@ export default function TarefasScreen() {
       case 'Concluída':
         return '#4caf50';
       case 'Em Andamento':
-        return '#ff9800';
+        return '#3498db';
       case 'Pendente':
         return '#f44336';
       default:
@@ -173,7 +173,7 @@ export default function TarefasScreen() {
       case 'Alta':
         return '#f44336';
       case 'Média':
-        return '#ff9800';
+        return '#f39c12';
       case 'Baixa':
         return '#4caf50';
       default:
@@ -187,7 +187,7 @@ export default function TarefasScreen() {
         <View style={styles.description}>
           <Paragraph>{t('tasks.description')}</Paragraph>
           {console.log('Perfil do usuário:', user?.perfil)}
-          {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
+          {(user?.perfil === 'gestor' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
             <View style={styles.buttonGroup}>
               <Button
                 mode="contained"
@@ -228,7 +228,7 @@ export default function TarefasScreen() {
                 <Card.Content>
                   <View style={styles.cardHeader}>
                   <Title style={styles.cardTitle}>{tarefa.titulo}</Title>
-                    {(user?.perfil === 'lider' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
+                    {(user?.perfil === 'gestor' || user?.perfil === 'dono_empresa' || user?.perfil === 'admin_sistema') && (
                       <Menu
                         visible={menuVisible === tarefa.id}
                         onDismiss={() => setMenuVisible(null)}
@@ -285,6 +285,14 @@ export default function TarefasScreen() {
                   )}
                 </Card.Content>
                 <Card.Actions>
+                  <Button 
+                    mode="outlined" 
+                    compact
+                    onPress={() => router.push(`/detalhes-tarefa?tarefaId=${tarefa.id}`)}
+                    icon="eye"
+                  >
+                    Ver Detalhes
+                  </Button>
                   {tarefa.status === 'Pendente' && (
                     <Button 
                       mode="contained" 
@@ -394,7 +402,7 @@ const styles = StyleSheet.create({
   emptyCard: {
     marginBottom: 16,
     elevation: 2,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
   },
   emptyTitle: {
     textAlign: 'center',

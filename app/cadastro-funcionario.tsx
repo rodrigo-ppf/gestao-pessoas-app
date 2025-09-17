@@ -16,7 +16,7 @@ export default function CadastroFuncionarioScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [cargo, setCargo] = useState('');
-  const [liderSelecionado, setLiderSelecionado] = useState('');
+  const [gestorSelecionado, setGestorSelecionado] = useState('');
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
   
@@ -28,7 +28,7 @@ export default function CadastroFuncionarioScreen() {
   const [senhaVisible, setSenhaVisible] = useState(false);
   const [confirmarSenhaVisible, setConfirmarSenhaVisible] = useState(false);
 
-  const [lideres, setLideres] = useState<any[]>([]);
+  const [gestores, setGestores] = useState<any[]>([]);
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function CadastroFuncionarioScreen() {
     setConfirmarSenha('');
     setDepartamento('');
     setCargo('');
-    setLiderSelecionado('');
+    setGestorSelecionado('');
     setSenhaError('');
     setConfirmarSenhaError('');
     setSenhaVisible(false);
@@ -111,23 +111,23 @@ export default function CadastroFuncionarioScreen() {
   const carregarDados = () => {
     if (user?.empresaId) {
       const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-      const lideresList = usuarios.filter(u => u.perfil === 'lider' && u.ativo);
+      const gestoresList = usuarios.filter(u => u.perfil === 'gestor' && u.ativo);
       const funcionariosList = usuarios.filter(u => u.perfil === 'funcionario' && u.ativo);
       
       console.log('=== CARREGANDO DADOS ===');
       console.log('Usuários da empresa:', usuarios.length);
-      console.log('Líderes encontrados:', lideresList.length);
+      console.log('Gestores encontrados:', gestoresList.length);
       console.log('Funcionários encontrados:', funcionariosList.length);
-      console.log('Líderes:', lideresList.map(l => ({ id: l.id, nome: l.nome })));
+      console.log('Gestores:', gestoresList.map(g => ({ id: g.id, nome: g.nome })));
       
-      setLideres(lideresList);
+      setGestores(gestoresList);
       setFuncionarios(funcionariosList);
     }
   };
 
   const handleCadastro = async () => {
     console.log('=== INICIANDO CADASTRO DE FUNCIONÁRIO ===');
-    console.log('Dados do formulário:', { nome, email, departamento, cargo, liderSelecionado });
+    console.log('Dados do formulário:', { nome, email, departamento, cargo, gestorSelecionado });
     
     if (!nome || !email || !senha || !confirmarSenha || !departamento || !cargo) {
       console.log('Erro: Campos obrigatórios não preenchidos');
@@ -159,20 +159,20 @@ export default function CadastroFuncionarioScreen() {
       return;
     }
 
-    if (!liderSelecionado) {
-      console.log('Erro: Nenhum líder selecionado');
-      console.log('Líderes disponíveis:', lideres.map(l => ({ id: l.id, nome: l.nome })));
-      Alert.alert('Erro', 'Selecione um líder para o funcionário');
+    if (!gestorSelecionado) {
+      console.log('Erro: Nenhum gestor selecionado');
+      console.log('Gestores disponíveis:', gestores.map(g => ({ id: g.id, nome: g.nome })));
+      Alert.alert('Erro', 'Selecione um gestor para o funcionário');
       return;
     }
     
-    // Verificar se o líder selecionado existe
-    const liderExiste = lideres.find(l => l.id === liderSelecionado);
-    if (!liderExiste) {
-      console.log('Erro: Líder selecionado não existe');
-      console.log('Líder selecionado:', liderSelecionado);
-      console.log('Líderes disponíveis:', lideres.map(l => ({ id: l.id, nome: l.nome })));
-      Alert.alert('Erro', 'Líder selecionado não é válido');
+    // Verificar se o gestor selecionado existe
+    const gestorExiste = gestores.find(g => g.id === gestorSelecionado);
+    if (!gestorExiste) {
+      console.log('Erro: Gestor selecionado não existe');
+      console.log('Gestor selecionado:', gestorSelecionado);
+      console.log('Gestores disponíveis:', gestores.map(g => ({ id: g.id, nome: g.nome })));
+      Alert.alert('Erro', 'Gestor selecionado não é válido');
       return;
     }
 
@@ -184,13 +184,13 @@ export default function CadastroFuncionarioScreen() {
         nome,
         email,
         senha,
-        perfil: 'funcionario',
+        perfil: 'funcionario' as const,
         empresaId: user?.empresaId || '',
         departamento,
         cargo,
         avatar: '👤',
         ativo: true,
-        liderId: liderSelecionado
+        gestorId: gestorSelecionado
       };
       
       console.log('Dados para criação:', dadosFuncionario);
@@ -198,11 +198,11 @@ export default function CadastroFuncionarioScreen() {
       const novoFuncionario = await MockDataService.createUsuario(dadosFuncionario);
       console.log('Funcionário criado com sucesso:', novoFuncionario);
 
-      // Atualizar a equipe do líder
-      const lider = lideres.find(l => l.id === liderSelecionado);
-      if (lider) {
-        const equipeAtualizada = [...(lider.equipe || []), novoFuncionario.id];
-        console.log('Equipe do líder atualizada:', equipeAtualizada);
+      // Atualizar a equipe do gestor
+      const gestor = gestores.find(g => g.id === gestorSelecionado);
+      if (gestor) {
+        const equipeAtualizada = [...(gestor.equipe || []), novoFuncionario.id];
+        console.log('Equipe do gestor atualizada:', equipeAtualizada);
       }
 
       // Limpar formulário
@@ -236,7 +236,7 @@ export default function CadastroFuncionarioScreen() {
 
   const handleCancelar = () => {
     // Verificar se há dados preenchidos
-    const temDados = nome || email || senha || confirmarSenha || departamento || cargo || liderSelecionado;
+    const temDados = nome || email || senha || confirmarSenha || departamento || cargo || gestorSelecionado;
     
     if (temDados) {
       Alert.alert(
@@ -342,24 +342,24 @@ export default function CadastroFuncionarioScreen() {
               placeholder="Ex: Vendedor, Analista, Desenvolvedor"
             />
 
-            <View style={styles.liderSection}>
-              <Title style={styles.sectionTitle}>Selecionar Líder *</Title>
-              {lideres.length > 0 ? (
-                lideres.map((lider) => (
+            <View style={styles.gestorSection}>
+              <Title style={styles.sectionTitle}>Selecionar Gestor *</Title>
+              {gestores.length > 0 ? (
+                gestores.map((gestor) => (
                   <Button
-                    key={lider.id}
-                    mode={liderSelecionado === lider.id ? 'contained' : 'outlined'}
-                    onPress={() => setLiderSelecionado(lider.id)}
-                    style={styles.liderButton}
+                    key={gestor.id}
+                    mode={gestorSelecionado === gestor.id ? 'contained' : 'outlined'}
+                    onPress={() => setGestorSelecionado(gestor.id)}
+                    style={styles.gestorButton}
                   >
-                    {lider.nome} - {lider.cargo}
+                    {gestor.nome} - {gestor.cargo}
                   </Button>
                 ))
               ) : (
                 <Card style={styles.warningCard}>
                   <Card.Content>
                     <Paragraph style={styles.warningText}>
-                      ⚠️ Nenhum líder cadastrado. Cadastre um líder primeiro.
+                      ⚠️ Nenhum gestor cadastrado. Cadastre um gestor primeiro.
                     </Paragraph>
                     <Button
                       mode="contained"
@@ -398,7 +398,7 @@ export default function CadastroFuncionarioScreen() {
                 loading={loading}
                 style={styles.saveButton}
                 icon="check"
-                disabled={lideres.length === 0}
+                disabled={gestores.length === 0}
               >
                 Cadastrar Colaborador
               </Button>
@@ -423,7 +423,7 @@ export default function CadastroFuncionarioScreen() {
             ) : (
               <View style={styles.employeesList}>
                 {funcionarios.map((funcionario, index) => {
-                  const lider = lideres.find(l => l.id === funcionario.liderId);
+                  const gestor = gestores.find(g => g.id === funcionario.gestorId);
                   return (
                     <View key={funcionario.id}>
                       <List.Item
@@ -443,7 +443,7 @@ export default function CadastroFuncionarioScreen() {
                               compact
                               style={styles.chip}
                             >
-                              {lider?.nome || 'Sem líder'}
+                              {gestor?.nome || 'Sem gestor'}
                             </Chip>
                           </View>
                         )}
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
-  liderSection: {
+  gestorSection: {
     marginBottom: 16,
   },
   sectionTitle: {
@@ -490,11 +490,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#1976d2',
   },
-  liderButton: {
+  gestorButton: {
     marginBottom: 8,
   },
   warningCard: {
-    backgroundColor: '#fff3e0',
+    backgroundColor: '#fef9e7',
     marginBottom: 16,
   },
   warningText: {

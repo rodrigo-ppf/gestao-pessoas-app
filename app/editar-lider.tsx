@@ -1,4 +1,4 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Chip, Divider, List, Paragraph, TextInput, Title } from 'react-native-paper';
 
-export default function EditarLiderScreen() {
+export default function EditarGestorScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { liderId } = useLocalSearchParams();
+  const { gestorId } = useLocalSearchParams();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -20,31 +20,31 @@ export default function EditarLiderScreen() {
   const [cargo, setCargo] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [lider, setLider] = useState<any>(null);
+  const [gestor, setGestor] = useState<any>(null);
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
 
   useEffect(() => {
     carregarDados();
-  }, [liderId]);
+  }, [gestorId]);
 
   useEffect(() => {
     checkForChanges();
-  }, [nome, email, departamento, cargo, senha, confirmarSenha, lider]);
+  }, [nome, email, departamento, cargo, senha, confirmarSenha, gestor]);
 
   const carregarDados = () => {
-    if (liderId && user?.empresaId) {
-      const liderEncontrado = MockDataService.getUsuarioById(liderId as string);
-      if (liderEncontrado) {
-        setLider(liderEncontrado);
-        setNome(liderEncontrado.nome);
-        setEmail(liderEncontrado.email);
-        setDepartamento(liderEncontrado.departamento || '');
-        setCargo(liderEncontrado.cargo || '');
+    if (gestorId && user?.empresaId) {
+      const gestorEncontrado = MockDataService.getUsuarioById(gestorId as string);
+      if (gestorEncontrado) {
+        setGestor(gestorEncontrado);
+        setNome(gestorEncontrado.nome);
+        setEmail(gestorEncontrado.email);
+        setDepartamento(gestorEncontrado.departamento || '');
+        setCargo(gestorEncontrado.cargo || '');
         
-        // Carregar funcionários do líder
+        // Carregar funcionários do gestor
         const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-        const funcionariosDoLider = usuarios.filter(u => u.perfil === 'funcionario' && u.liderId === liderId);
-        setFuncionarios(funcionariosDoLider);
+        const funcionariosDoGestor = usuarios.filter(u => u.perfil === 'funcionario' && u.gestorId === gestorId);
+        setFuncionarios(funcionariosDoGestor);
       }
     }
   };
@@ -79,7 +79,7 @@ export default function EditarLiderScreen() {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // TODO: Implementar atualização no banco de dados real
-      // const liderAtualizado = await MockDataService.updateUsuario(liderId as string, dadosAtualizados);
+      // const gestorAtualizado = await MockDataService.updateUsuario(gestorId as string, dadosAtualizados);
       
       setHasChanges(false);
       
@@ -110,10 +110,10 @@ export default function EditarLiderScreen() {
 
   const checkForChanges = () => {
     const temAlteracoes = 
-      nome !== lider?.nome ||
-      email !== lider?.email ||
-      departamento !== lider?.departamento ||
-      cargo !== lider?.cargo ||
+      nome !== gestor?.nome ||
+      email !== gestor?.email ||
+      departamento !== gestor?.departamento ||
+      cargo !== gestor?.cargo ||
       senha ||
       confirmarSenha;
     
@@ -142,21 +142,20 @@ export default function EditarLiderScreen() {
     }
   };
 
-  if (!lider) {
+  if (!gestor) {
     return (
-      <View style={styles.container}>
+      <MainLayout title="Editar Gestor" showBackButton={true}>
         <View style={styles.loadingContainer}>
           <Title>Carregando...</Title>
         </View>
-      </View>
+      </MainLayout>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Editar Gestor" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Editar Líder</Title>
           <Paragraph>Edite as informações do líder</Paragraph>
         </View>
 
@@ -262,7 +261,7 @@ export default function EditarLiderScreen() {
         <Card style={styles.listCard}>
           <Card.Content>
             <Title style={styles.listTitle}>
-              👷 Funcionários sob Liderança ({funcionarios.length})
+              👷 Funcionários sob Gestão ({funcionarios.length})
             </Title>
             
             {funcionarios.length === 0 ? (
@@ -306,9 +305,7 @@ export default function EditarLiderScreen() {
           </Card.Content>
         </Card>
       </ScrollView>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
@@ -334,12 +331,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   changesIndicator: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#fef9e7',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: '#f39c12',
   },
   changesText: {
     color: '#856404',

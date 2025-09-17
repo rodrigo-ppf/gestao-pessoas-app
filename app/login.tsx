@@ -1,4 +1,4 @@
-import AuthRedirect from '@/components/AuthRedirect';
+// import AuthRedirect from '@/components/AuthRedirect';
 import LanguageSelector from '@/components/LanguageSelector';
 import UniversalIcon from '@/components/UniversalIcon';
 import { DesignSystem } from '@/constants/design-system';
@@ -89,11 +89,21 @@ export default function LoginScreen() {
       const success = await login(email, senha);
       console.log('Resultado do login:', success);
       if (success) {
-        console.log('Login bem-sucedido, navegando para home');
-        // Usar setTimeout para garantir que o estado seja atualizado antes da navegação
-        setTimeout(() => {
-          router.push('/home');
-        }, 100);
+        console.log('Login bem-sucedido');
+        
+        // Verificar se o email tem acesso a múltiplas empresas como responsável
+        const hasMultiple = MockDataService.hasMultipleEmpresas(email);
+        if (hasMultiple) {
+          console.log('Email tem acesso a múltiplas empresas, redirecionando para seleção');
+          setTimeout(() => {
+            router.push('/selecionar-empresa');
+          }, 100);
+        } else {
+          console.log('Email tem acesso a uma empresa, navegando para home');
+          setTimeout(() => {
+            router.push('/home');
+          }, 100);
+        }
       } else {
         Alert.alert(t('common.error'), t('auth.invalidCredentials'));
       }
@@ -115,9 +125,17 @@ export default function LoginScreen() {
     try {
       const success = await login(userEmail, userSenha);
       if (success) {
-        setTimeout(() => {
-          router.push('/home');
-        }, 100);
+        // Verificar se o email tem acesso a múltiplas empresas como responsável
+        const hasMultiple = MockDataService.hasMultipleEmpresas(userEmail);
+        if (hasMultiple) {
+          setTimeout(() => {
+            router.push('/selecionar-empresa');
+          }, 100);
+        } else {
+          setTimeout(() => {
+            router.push('/home');
+          }, 100);
+        }
       } else {
         Alert.alert('Erro', 'Falha no login automático');
       }
@@ -128,12 +146,68 @@ export default function LoginScreen() {
     }
   };
 
+  const handleClearData = () => {
+    Alert.alert(
+      'Limpar Dados',
+      'Esta ação irá apagar TODOS os dados do sistema (empresas, usuários, tarefas, pontos, etc.) e restaurar os dados padrão. Esta ação não pode ser desfeita.\n\nDeseja continuar?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Limpar Dados',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              console.log('Iniciando limpeza de dados...');
+              
+              // Limpar localStorage e sessionStorage
+              if (typeof window !== 'undefined') {
+                console.log('Limpando localStorage e sessionStorage...');
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('LocalStorage e sessionStorage limpos');
+              }
+              
+              // Limpar dados do MockDataService
+              await MockDataService.resetData();
+              console.log('Limpeza de dados concluída');
+              
+              // Forçar recarga dos dados
+              console.log('Forçando recarga dos dados...');
+              await MockDataService.initializeDefaultData();
+              console.log('Recarga concluída');
+              
+              // Verificar dados após limpeza
+              const usuarios = await MockDataService.getUsuarios();
+              console.log('Usuários após limpeza:', usuarios.length);
+              console.log('Usuários:', usuarios.map(u => ({ nome: u.nome, email: u.email })));
+              
+              Alert.alert(
+                'Sucesso', 
+                'Todos os dados foram limpos e o sistema foi restaurado aos dados padrão.\n\n• Dados do sistema limpos\n• LocalStorage limpo\n• SessionStorage limpo\n• Dados padrão restaurados',
+                [{ text: 'OK' }]
+              );
+            } catch (error) {
+              console.error('Erro ao limpar dados:', error);
+              Alert.alert('Erro', 'Não foi possível limpar os dados do sistema.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const getPerfilColor = (perfil: string) => {
     switch (perfil) {
       case 'admin_sistema':
         return '#f44336';
       case 'admin_empresa':
-        return '#ff9800';
+        return '#f39c12';
       case 'colaborador':
         return '#4caf50';
       default:
@@ -156,7 +230,7 @@ export default function LoginScreen() {
 
   return (
     <>
-      <AuthRedirect />
+      {/* AuthRedirect removido para evitar redirecionamento automático */}
       <KeyboardAvoidingView 
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -257,15 +331,15 @@ export default function LoginScreen() {
               </View>
             </Surface>
 
-            {/* Botão Cadastrar Empresa */}
+            {/* Botão Criar Conta */}
             <View style={[styles.companySection, { marginHorizontal: isSmallScreen ? DesignSystem.spacing.sm : 0 }]}>
               <Button
                 mode="outlined"
                 onPress={() => router.push('/cadastro-empresa')}
                 style={styles.companyButton}
-                icon={() => <UniversalIcon name="domain-plus" size={20} color={DesignSystem.colors.primary} />}
+                icon={() => <UniversalIcon name="account-plus" size={20} color={DesignSystem.colors.primary} />}
               >
-                Cadastrar Empresa
+                Criar Conta
               </Button>
             </View>
 
@@ -316,6 +390,16 @@ export default function LoginScreen() {
                     icon={() => <UniversalIcon name="translate" size={16} color={DesignSystem.colors.primary} />}
                   >
                     Idioma
+                  </Button>
+
+                  <Button
+                    mode="outlined"
+                    onPress={handleClearData}
+                    style={[styles.developerButton, { borderColor: '#f44336' }]}
+                    compact
+                    icon={() => <UniversalIcon name="delete-sweep" size={16} color="#f44336" />}
+                  >
+                    Limpar Dados
                   </Button>
                 </Surface>
               )}

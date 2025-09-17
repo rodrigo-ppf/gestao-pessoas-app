@@ -1,8 +1,8 @@
-import FloatingMenu from '@/components/FloatingMenu';
+import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService, { Usuario } from '@/src/services/MockDataService';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Paragraph, Title } from 'react-native-paper';
 
@@ -36,10 +36,9 @@ export default function ColaboradoresScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <MainLayout title="Colaboradores" showBackButton={true}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title>Colaboradores</Title>
           <Paragraph>Gerencie os colaboradores da empresa</Paragraph>
         </View>
 
@@ -93,23 +92,16 @@ export default function ColaboradoresScreen() {
           )}
         </View>
       </ScrollView>
-
-      <FloatingMenu />
-    </View>
+    </MainLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
   content: {
     flex: 1,
   },
   header: {
     padding: 20,
-    backgroundColor: '#1976d2',
   },
   list: {
     padding: 16,
@@ -121,7 +113,7 @@ const styles = StyleSheet.create({
   emptyCard: {
     marginBottom: 16,
     elevation: 2,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
   },
   emptyTitle: {
     textAlign: 'center',

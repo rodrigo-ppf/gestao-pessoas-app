@@ -132,7 +132,7 @@ export default function RelatorioSolicitacoesScreen({ navigation }) {
               </DataTable.Cell>
               <DataTable.Cell>
                 <Chip
-                  style={[styles.statusChip, { backgroundColor: '#ff9800' }]}
+                  style={[styles.statusChip, { backgroundColor: '#f39c12' }]}
                   textStyle={styles.statusChipText}
                 >
                   {item.justificativasSolicitadas}

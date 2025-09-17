@@ -114,7 +114,7 @@ export default function GerenciarEquipeScreen() {
       case 'dono_empresa':
         return '#9c27b0';
       case 'lider':
-        return '#ff9800';
+        return '#f39c12';
       case 'colaborador':
         return '#4caf50';
       default:

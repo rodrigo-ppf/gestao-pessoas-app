@@ -3,7 +3,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import MockDataService from '@/src/services/MockDataService';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, Paragraph, Title } from 'react-native-paper';
 
@@ -24,7 +24,7 @@ export default function HomeEmpresaScreen() {
       case 'admin_sistema':
         return '#f44336';
       case 'admin_empresa':
-        return '#ff9800';
+        return '#f39c12';
       case 'colaborador':
         return '#4caf50';
       default:
@@ -275,11 +275,11 @@ const styles = StyleSheet.create({
   welcomeCard: {
     margin: 16,
     elevation: 2,
-    backgroundColor: '#f3e5f5',
+    backgroundColor: '#e8f4fd',
   },
   welcomeTitle: {
     fontSize: 20,
-    color: '#7b1fa2',
+    color: '#2c3e50',
     marginBottom: 12,
   },
   welcomeText: {

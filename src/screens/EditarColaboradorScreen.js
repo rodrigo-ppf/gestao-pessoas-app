@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
     color: '#1976d2',
   },
   changesIndicator: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#fef9e7',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: '#f39c12',
   },
   changesText: {
     color: '#856404',

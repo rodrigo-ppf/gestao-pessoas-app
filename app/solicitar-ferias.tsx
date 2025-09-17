@@ -1,7 +1,6 @@
 import MainLayout from '@/components/MainLayout';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
-import MockDataService from '@/src/services/MockDataService';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, DataTable, Modal, Paragraph, Portal, Text, TextInput, Title } from 'react-native-paper';
@@ -63,36 +62,18 @@ export default function SolicitarFeriasScreen() {
 
   const carregarSolicitacoes = async () => {
     try {
-      // Simular solicitações de férias
-      const solicitacoesSimuladas: SolicitacaoFerias[] = [
-        {
-          id: '1',
-          colaboradorId: user?.id || '',
-          colaboradorNome: user?.nome || '',
-          dataInicio: '15/01/2025',
-          dataFim: '29/01/2025',
-          diasSolicitados: 15,
-          observacoes: 'Férias de verão',
-          status: 'aprovado',
-          dataSolicitacao: '10/12/2024',
-          aprovadoPor: 'João Silva (Gestor)',
-          dataAprovacao: '12/12/2024'
-        },
-        {
-          id: '2',
-          colaboradorId: user?.id || '',
-          colaboradorNome: user?.nome || '',
-          dataInicio: '10/03/2025',
-          dataFim: '24/03/2025',
-          diasSolicitados: 15,
-          observacoes: 'Viagem familiar',
-          status: 'pendente',
-          dataSolicitacao: '05/01/2025'
-        }
-      ];
-      setSolicitacoes(solicitacoesSimuladas);
+      // Carregar solicitações do localStorage
+      const solicitacoesSalvas = await MockDataService.getSolicitacoesFerias();
+      
+      // Filtrar apenas as solicitações do usuário atual
+      const solicitacoesDoUsuario = solicitacoesSalvas.filter(solicitacao => 
+        solicitacao.colaboradorId === user?.id || solicitacao.colaboradorNome === user?.nome
+      );
+      
+      setSolicitacoes(solicitacoesDoUsuario);
     } catch (error) {
       console.error('Erro ao carregar solicitações:', error);
+      setSolicitacoes([]);
     }
   };
 
@@ -161,15 +142,20 @@ export default function SolicitarFeriasScreen() {
         id: Date.now().toString(),
         colaboradorId: user?.id || '',
         colaboradorNome: user?.nome || '',
+        colaboradorCargo: user?.cargo || '',
         dataInicio,
         dataFim,
         diasSolicitados,
         observacoes,
         status: 'pendente',
-        dataSolicitacao: formatarData(new Date())
+        dataSolicitacao: formatarData(new Date()),
+        empresaId: user?.empresaId || ''
       };
 
-      // Simular salvamento
+      // Salvar no localStorage
+      await MockDataService.salvarSolicitacaoFerias(novaSolicitacao);
+      
+      // Atualizar estado local
       setSolicitacoes(prev => [novaSolicitacao, ...prev]);
       
       // Atualizar saldo

@@ -1,5 +1,4 @@
 import MockDataService, { HistoricoTarefa } from '@/src/services/MockDataService';
-import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Card, Chip, Paragraph, Title } from 'react-native-paper';
 
@@ -38,13 +37,13 @@ export default function TaskHistory({ tarefaId }: TaskHistoryProps) {
       case 'criada':
         return '#4caf50';
       case 'status_alterado':
-        return '#ff9800';
+        return '#f39c12';
       case 'responsavel_alterado':
         return '#2196f3';
       case 'prioridade_alterada':
         return '#9c27b0';
       case 'prazo_alterado':
-        return '#ff5722';
+        return '#e74c3c';
       case 'concluida':
         return '#4caf50';
       case 'cancelada':

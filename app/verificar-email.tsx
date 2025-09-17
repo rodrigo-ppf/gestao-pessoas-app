@@ -1,106 +1,92 @@
-import FloatingMenu from '@/components/FloatingMenu';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
-import MockDataService from '@/src/services/MockDataService';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Paragraph, TextInput, Title } from 'react-native-paper';
 
 export default function VerificarEmailScreen() {
   const [codigo, setCodigo] = useState('');
   const [loading, setLoading] = useState(false);
-  const [empresa, setEmpresa] = useState<any>(null);
+  const [loadingStep, setLoadingStep] = useState('');
+  const [emailVerificacao, setEmailVerificacao] = useState('');
+  const [codigoCorreto, setCodigoCorreto] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const { t } = useTranslation();
   const { login } = useAuth();
-  const { empresaId, email } = useLocalSearchParams<{ empresaId: string; email: string }>();
 
   useEffect(() => {
     console.log('VerificarEmailScreen - Carregando tela de verificação');
-    // Buscar a empresa mais recente (não verificada)
-    const empresas = MockDataService.getEmpresas();
-    console.log('Todas as empresas:', empresas);
     
-    // Buscar a empresa mais recente (última criada)
-    const empresaMaisRecente = empresas
-      .filter(e => !e.emailVerificado)
-      .sort((a, b) => new Date(b.dataCadastro).getTime() - new Date(a.dataCadastro).getTime())[0];
-    
-    console.log('Empresa mais recente não verificada:', empresaMaisRecente);
-    if (empresaMaisRecente) {
-      setEmpresa(empresaMaisRecente);
+    // Buscar dados do localStorage
+    if (typeof window !== 'undefined') {
+      const email = localStorage.getItem('emailVerificacao');
+      const codigo = localStorage.getItem('codigoVerificacao');
+      
+      if (email) {
+        setEmailVerificacao(email);
+      }
+      if (codigo) {
+        setCodigoCorreto(codigo);
+      }
     }
   }, []);
 
   const handleVerificarCodigo = async () => {
     console.log('handleVerificarCodigo - Iniciando verificação...');
     console.log('Código inserido:', codigo);
-    console.log('Empresa:', empresa);
+    console.log('Código correto:', codigoCorreto);
+    
+    // Limpar estados anteriores
+    setError('');
+    setSuccess(false);
     
     if (!codigo) {
       console.log('Erro: Código não preenchido');
-      Alert.alert(t('common.error'), 'Digite o código de verificação');
+      setError('Digite o código de verificação');
+      return;
+    }
+
+    if (codigo !== codigoCorreto) {
+      console.log('Erro: Código incorreto');
+      setError('Código de verificação incorreto. Tente novamente.');
+      // Limpar o campo de código
+      setCodigo('');
       return;
     }
 
     setLoading(true);
+    setLoadingStep('Verificando código...');
     console.log('Loading iniciado...');
     
     try {
-      // Simular verificação (para protótipo, qualquer código funciona)
-      console.log('Simulando verificação...');
+      // Simular verificação
+      console.log('Verificando código...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Ativar empresa automaticamente (protótipo)
-      if (empresa) {
-        console.log('Ativando empresa:', empresa.id);
-        await MockDataService.verificarEmailEmpresa(empresa.id, '123456');
-        console.log('Empresa ativada com sucesso!');
-        
-        // Criar usuário dono da empresa automaticamente
-        console.log('Criando usuário dono da empresa...');
-        const donoEmpresa = await MockDataService.createUsuario({
-          nome: empresa.nome || 'Dono da Empresa',
-          email: empresa.email || 'dono@empresa.com',
-          senha: '123456', // Senha padrão
-          perfil: 'dono_empresa',
-          empresaId: empresa.id,
-          departamento: 'Diretoria',
-          cargo: 'Dono da Empresa',
-          avatar: '👔',
-          ativo: true
-        });
-        console.log('Usuário dono da empresa criado:', donoEmpresa);
-        
-        // Fazer login automático do dono da empresa
-        console.log('Fazendo login automático...');
-        const loginSuccess = await login(donoEmpresa.email, '123456');
-        console.log('Login automático:', loginSuccess ? 'Sucesso' : 'Falhou');
+      setLoadingStep('Email verificado com sucesso!');
+      setSuccess(true);
+      
+      // Simular delay para mostrar sucesso
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Limpar dados temporários
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('codigoVerificacao');
+        localStorage.removeItem('emailVerificacao');
       }
       
-      console.log('Redirecionando automaticamente para /home...');
+      console.log('Redirecionando para home...');
       
-      // Redirecionar automaticamente após verificação
-      setTimeout(() => {
-        console.log('Navegando para /home...');
-        try {
-          router.push('/home');
-          console.log('Navegação para /home executada!');
-        } catch (navError) {
-          console.error('Erro na navegação:', navError);
-        }
-      }, 1500);
+      // Redirecionar automaticamente para home
+      router.replace('/home');
       
-      Alert.alert(
-        t('common.success'),
-        'Email verificado com sucesso!\n\nUm usuário dono da empresa foi criado automaticamente.\n\nEmail: ' + (empresa?.email || 'dono@empresa.com') + '\nSenha: 123456\n\nRedirecionando para home...'
-      );
     } catch (error) {
       console.error('Erro na verificação:', error);
-      Alert.alert(t('common.error'), 'Erro ao verificar código');
-    } finally {
-      console.log('Loading finalizado...');
+      setError('Erro ao verificar código. Tente novamente.');
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -145,11 +131,11 @@ export default function VerificarEmailScreen() {
                 Enviamos um código de verificação para:
               </Paragraph>
               <Paragraph style={styles.emailAddress}>
-                {empresa?.email || 'email@empresa.com'}
+                {emailVerificacao || 'email@empresa.com'}
               </Paragraph>
-              {empresa && (
-                <Paragraph style={styles.empresaInfo}>
-                  Empresa: {empresa.nome}
+              {codigoCorreto && (
+                <Paragraph style={styles.codeInfo}>
+                  Código enviado: {codigoCorreto}
                 </Paragraph>
               )}
             </View>
@@ -157,19 +143,52 @@ export default function VerificarEmailScreen() {
             <TextInput
               label="Código de Verificação"
               value={codigo}
-              onChangeText={setCodigo}
+              onChangeText={(value) => {
+                setCodigo(value);
+                // Limpar erro quando usuário digitar
+                if (error) setError('');
+              }}
               style={styles.input}
               mode="outlined"
               placeholder="Digite o código de 6 dígitos"
               keyboardType="numeric"
               maxLength={6}
+              error={!!error}
+              disabled={loading || success}
             />
+            
+            {/* Feedback de Erro */}
+            {error && (
+              <View style={styles.errorContainer}>
+                <Paragraph style={styles.errorText}>❌ {error}</Paragraph>
+              </View>
+            )}
+            
+            {/* Feedback de Sucesso */}
+            {success && (
+              <View style={styles.successContainer}>
+                <Paragraph style={styles.successText}>✅ Email verificado com sucesso!</Paragraph>
+                <Paragraph style={styles.successSubtext}>Redirecionando para o sistema...</Paragraph>
+              </View>
+            )}
+            
+            {/* Indicador de Progresso */}
+            {loading && (
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View style={styles.progressFill} />
+                </View>
+                <Paragraph style={styles.progressText}>{loadingStep}</Paragraph>
+              </View>
+            )}
 
             <View style={styles.helpText}>
-              <Paragraph style={styles.helpTitle}>💡 Protótipo:</Paragraph>
+              <Paragraph style={styles.helpTitle}>💡 Instruções:</Paragraph>
               <Paragraph style={styles.helpContent}>
-                Digite qualquer código de 6 dígitos e clique em "Verificar" para continuar.
-                <Title style={styles.codeHint}>Exemplo: 123456</Title>
+                Digite o código de 6 dígitos que foi enviado para seu email.
+                {codigoCorreto && (
+                  <Title style={styles.codeHint}>Código: {codigoCorreto}</Title>
+                )}
               </Paragraph>
             </View>
 
@@ -179,6 +198,7 @@ export default function VerificarEmailScreen() {
                 onPress={handleVoltar}
                 style={styles.cancelButton}
                 icon="arrow-left"
+                disabled={loading || success}
               >
                 {t('common.cancel')}
               </Button>
@@ -187,10 +207,11 @@ export default function VerificarEmailScreen() {
                 mode="contained"
                 onPress={handleVerificarCodigo}
                 loading={loading}
+                disabled={loading || success || !codigo}
                 style={styles.verifyButton}
-                icon="check"
+                icon={loading ? undefined : "check"}
               >
-                Verificar
+                {loading ? loadingStep : success ? 'Verificado!' : 'Verificar'}
               </Button>
             </View>
 
@@ -201,22 +222,9 @@ export default function VerificarEmailScreen() {
             >
               Não recebeu o código? Reenviar
             </Button>
-
-            <Button
-              mode="outlined"
-              onPress={() => {
-                console.log('Teste direto de navegação para /home');
-                router.push('/home');
-              }}
-              style={styles.testButton}
-            >
-              Teste Navegação Home
-            </Button>
           </Card.Content>
         </Card>
       </ScrollView>
-
-      <FloatingMenu />
     </View>
   );
 }
@@ -261,11 +269,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  codeInfo: {
+    color: '#1976d2',
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: 'bold',
+  },
   input: {
     marginBottom: 16,
   },
   helpText: {
-    backgroundColor: '#fff3e0',
+    backgroundColor: '#fef9e7',
     padding: 12,
     borderRadius: 8,
     marginBottom: 20,
@@ -299,8 +313,62 @@ const styles = StyleSheet.create({
   resendButton: {
     marginTop: 16,
   },
-  testButton: {
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f44336',
     marginTop: 8,
-    backgroundColor: '#ff9800',
+  },
+  errorText: {
+    color: '#f44336',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  successContainer: {
+    backgroundColor: '#e8f5e8',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4caf50',
+    marginTop: 8,
+  },
+  successText: {
+    color: '#4caf50',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  successSubtext: {
+    color: '#4caf50',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  progressContainer: {
+    marginVertical: 16,
+    padding: 16,
+    backgroundColor: '#e3f2fd',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1976d2',
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#1976d2',
+    borderRadius: 2,
+    width: '100%',
+  },
+  progressText: {
+    textAlign: 'center',
+    color: '#1976d2',
+    fontWeight: '500',
+    fontSize: 14,
   },
 });

@@ -477,11 +477,11 @@ export default function EditarColaboradorScreen() {
               </View>
               <View style={styles.radioOption}>
                 <RadioButton
-                  value="lider"
-                  status={formData.perfil === 'lider' ? 'checked' : 'unchecked'}
-                  onPress={() => updateFormData('perfil', 'lider')}
+                  value="gestor"
+                  status={formData.perfil === 'gestor' ? 'checked' : 'unchecked'}
+                  onPress={() => updateFormData('perfil', 'gestor')}
                 />
-                <Text>Líder</Text>
+                <Text>Gestor</Text>
               </View>
             </View>
             <HelperText type="error" visible={!!errors.perfil}>
@@ -696,29 +696,34 @@ export default function EditarColaboradorScreen() {
 
                 {/* Dias do Mês */}
                 <View style={styles.daysContainer}>
-                  {Array.from({ length: getDaysInMonth(tempDateEntrada) }, (_, i) => i + 1).map((day) => {
+                  {Array.from({ length: getFirstDayOfMonth(tempDateEntrada) }, (_, i) => (
+                    <View key={`empty-${i}`} style={styles.dayCell} />
+                  ))}
+                  {Array.from({ length: getDaysInMonth(tempDateEntrada) }, (_, i) => {
+                    const day = i + 1;
                     const isSelected = tempDateEntrada.getDate() === day;
                     const isToday = new Date().getDate() === day && 
                                    new Date().getMonth() === tempDateEntrada.getMonth() && 
                                    new Date().getFullYear() === tempDateEntrada.getFullYear();
                     
                     return (
-                      <View key={day} style={styles.dayCell}>
-                        <Button
-                          mode={isSelected ? "contained" : "text"}
-                          onPress={() => selectDayEntrada(day)}
-                          style={[
-                            styles.dayButton,
-                            isSelected && styles.selectedDayButton,
-                            isToday && !isSelected && styles.todayButton
-                          ]}
-                          labelStyle={[
-                            isToday && !isSelected && { color: '#1976d2' }
-                          ]}
-                        >
-                          {day.toString()}
-                        </Button>
-                      </View>
+                      <Button
+                        key={day}
+                        mode={isSelected ? "contained" : "text"}
+                        onPress={() => selectDayEntrada(day)}
+                        style={[
+                          styles.dayButton,
+                          isSelected && styles.selectedDayButton,
+                          isToday && !isSelected && styles.todayButton
+                        ]}
+                        labelStyle={[
+                          styles.dayButtonText,
+                          isSelected && styles.selectedDayButtonText,
+                          isToday && !isSelected && styles.todayButtonText
+                        ]}
+                      >
+                        {day}
+                      </Button>
                     );
                   })}
                 </View>
@@ -771,12 +776,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   changesIndicator: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#fef9e7',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: '#f39c12',
   },
   changesText: {
     color: '#856404',
@@ -853,6 +858,7 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     marginBottom: 20,
+    minHeight: 300,
   },
   calendarHeader: {
     flexDirection: 'row',
@@ -884,6 +890,8 @@ const styles = StyleSheet.create({
   daysContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   dayCell: {
     width: '14.28%',
@@ -892,8 +900,9 @@ const styles = StyleSheet.create({
   dayButton: {
     width: '14.28%',
     aspectRatio: 1,
-    minWidth: 0,
-    margin: 0,
+    minWidth: 32,
+    margin: 2,
+    padding: 0,
   },
   selectedDayButton: {
     backgroundColor: '#1976d2',
@@ -911,6 +920,8 @@ const styles = StyleSheet.create({
   },
   dayButtonText: {
     fontSize: 14,
+    fontWeight: 'normal',
+    textAlign: 'center',
   },
   datePickerButtons: {
     flexDirection: 'row',

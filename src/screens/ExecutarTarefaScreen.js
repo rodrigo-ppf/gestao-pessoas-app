@@ -49,7 +49,7 @@ export default function ExecutarTarefaScreen({ navigation, route }) {
   const getPrioridadeColor = (prioridade) => {
     switch (prioridade) {
       case 'alta': return '#f44336';
-      case 'media': return '#ff9800';
+      case 'media': return '#f39c12';
       case 'baixa': return '#4caf50';
       default: return '#666';
     }

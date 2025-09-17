@@ -6,10 +6,11 @@ import { clearWebUser, initializeWebData, isWeb, setWebUser } from '../utils/web
 interface AuthContextType {
   user: Usuario | null;
   isAuthenticated: boolean;
-  login: (email: string, senha: string) => Promise<boolean>;
+  login: (email: string, senha: string, empresaId?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   loading: boolean;
   updateUser: (updatedUser: Usuario) => void;
+  selectEmpresa: (empresaId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,13 +78,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const login = async (email: string, senha: string): Promise<boolean> => {
+  const login = async (email: string, senha: string, empresaId?: string): Promise<boolean> => {
     try {
       console.log('AuthContext: Tentando autenticar usuário:', email);
       const authenticatedUser = MockDataService.authenticateUser(email, senha);
       console.log('AuthContext: Usuário autenticado:', authenticatedUser);
       
       if (authenticatedUser) {
+        // Se o usuário tem acesso a múltiplas empresas e não especificou uma
+        if (authenticatedUser.empresasAcesso && authenticatedUser.empresasAcesso.length > 1 && !empresaId) {
+          // Retornar o usuário sem empresa selecionada para mostrar tela de seleção
+          setUser({ ...authenticatedUser, empresaId: '' });
+          return true;
+        }
+        
+        // Se empresaId foi especificado, verificar se o usuário tem acesso
+        if (empresaId && authenticatedUser.empresasAcesso) {
+          if (!authenticatedUser.empresasAcesso.includes(empresaId)) {
+            console.log('AuthContext: Usuário não tem acesso à empresa especificada');
+            return false;
+          }
+          authenticatedUser.empresaId = empresaId;
+        }
+        
         setUser(authenticatedUser);
         
         if (isWeb) {
@@ -112,24 +129,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const selectEmpresa = async (empresaId: string): Promise<boolean> => {
     try {
-      setUser(null);
+      if (!user || !user.empresasAcesso) {
+        return false;
+      }
+      
+      if (!user.empresasAcesso.includes(empresaId)) {
+        console.log('AuthContext: Usuário não tem acesso à empresa especificada');
+        return false;
+      }
+      
+      const updatedUser = { ...user, empresaId };
+      setUser(updatedUser);
       
       if (isWeb) {
+        localStorage.setItem('empresaId', empresaId);
+        setWebUser(updatedUser);
+      } else {
+        await StorageService.setItem('empresaId', empresaId);
+      }
+      
+      console.log('AuthContext: Empresa selecionada:', empresaId);
+      return true;
+    } catch (error) {
+      console.error('AuthContext: Erro ao selecionar empresa:', error);
+      return false;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      console.log('AuthContext: Iniciando logout...');
+      console.log('AuthContext: Usuário atual:', user);
+      console.log('AuthContext: isWeb:', isWeb);
+      
+      setUser(null);
+      console.log('AuthContext: Usuário definido como null');
+      
+      // Verificar se o estado foi atualizado
+      setTimeout(() => {
+        console.log('AuthContext: Verificando estado após logout - user:', user);
+      }, 100);
+      
+      if (isWeb) {
+        console.log('AuthContext: Limpando dados do localStorage...');
         // No web, usar localStorage diretamente
         localStorage.removeItem('userId');
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userPerfil');
         localStorage.removeItem('empresaId');
         clearWebUser();
+        console.log('AuthContext: Dados do localStorage limpos');
       } else {
+        console.log('AuthContext: Limpando dados do StorageService...');
         // No mobile, usar StorageService
         await StorageService.removeItem('userId');
         await StorageService.removeItem('userEmail');
         await StorageService.removeItem('userPerfil');
         await StorageService.removeItem('empresaId');
+        console.log('AuthContext: Dados do StorageService limpos');
       }
+      
+      console.log('AuthContext: Logout concluído com sucesso');
     } catch (error) {
       console.error('Erro no logout:', error);
     }
@@ -151,6 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     loading,
     updateUser,
+    selectEmpresa,
   };
 
   return (

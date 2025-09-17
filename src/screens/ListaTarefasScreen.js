@@ -94,7 +94,7 @@ export default function ListaTarefasScreen({ navigation }) {
   const getPrioridadeColor = (prioridade) => {
     switch (prioridade) {
       case 'alta': return '#f44336';
-      case 'media': return '#ff9800';
+      case 'media': return '#f39c12';
       case 'baixa': return '#4caf50';
       default: return '#666';
     }
@@ -102,7 +102,7 @@ export default function ListaTarefasScreen({ navigation }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pendente': return '#ff9800';
+      case 'pendente': return '#f39c12';
       case 'em_andamento': return '#2196f3';
       case 'concluida': return '#4caf50';
       case 'cancelada': return '#f44336';

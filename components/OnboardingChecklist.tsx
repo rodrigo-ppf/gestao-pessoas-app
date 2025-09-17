@@ -43,17 +43,13 @@ export default function OnboardingChecklist() {
       const empresas = await MockDataService.getEmpresas();
       const hasEmpresa = empresas.length > 0;
 
-      // Verificar se há líderes
-      const lideres = await MockDataService.getLideres();
-      const hasLideres = lideres.length > 0;
+      // Verificar se há gestores
+      const gestores = await MockDataService.getGestores();
+      const hasGestores = gestores.length > 0;
 
       // Verificar se há colaboradores
       const colaboradores = await MockDataService.getColaboradores();
       const hasColaboradores = colaboradores.length > 0;
-
-      // Verificar se há tarefas
-      const tarefas = await MockDataService.getTarefas();
-      const hasTarefas = tarefas.length > 0;
 
       const items: ChecklistItem[] = [
         {
@@ -66,12 +62,12 @@ export default function OnboardingChecklist() {
           required: true,
         },
         {
-          id: 'lider',
-          title: '2. Cadastrar Primeiro Líder',
-          description: 'Segundo passo: crie o perfil do primeiro líder da equipe',
+          id: 'gestor',
+          title: '2. Cadastrar Primeiro Gestor',
+          description: 'Segundo passo: crie o perfil do primeiro gestor da equipe',
           icon: 'account-tie',
           route: '/cadastro-lider',
-          completed: hasLideres,
+          completed: hasGestores,
           required: true,
         },
         {
@@ -81,15 +77,6 @@ export default function OnboardingChecklist() {
           icon: 'account-group',
           route: '/cadastro-funcionario',
           completed: hasColaboradores,
-          required: false,
-        },
-        {
-          id: 'tarefas',
-          title: '4. Criar Primeira Tarefa',
-          description: 'Quarto passo: organize o trabalho da equipe',
-          icon: 'clipboard-list',
-          route: '/criar-tarefa',
-          completed: hasTarefas,
           required: false,
         },
       ];
