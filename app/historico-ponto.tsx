@@ -96,9 +96,21 @@ export default function HistoricoPontoScreen() {
     const dataFimObj = new Date(dataFim.split('/').reverse().join('-'));
 
     // Se o usuário logado for colaborador, mostrar apenas seus registros
-    const colaboradoresParaProcessar = user?.perfil === 'colaborador' 
-      ? colaboradores.filter(col => col.id === user.id)
-      : colaboradores;
+    let colaboradoresParaProcessar = colaboradores;
+    
+    if (user?.perfil === 'colaborador') {
+      console.log('Usuário logado:', user);
+      console.log('Colaboradores disponíveis:', colaboradores);
+      
+      // Tentar diferentes formas de comparação
+      colaboradoresParaProcessar = colaboradores.filter(col => {
+        console.log('Comparando:', col.id, 'com', user.id, 'Resultado:', col.id === user.id);
+        console.log('Comparando email:', col.email, 'com', user.email, 'Resultado:', col.email === user.email);
+        return col.id === user.id || col.email === user.email;
+      });
+      
+      console.log('Colaboradores filtrados:', colaboradoresParaProcessar);
+    }
 
     colaboradoresParaProcessar.forEach(colaborador => {
       const dataAtual = new Date(dataInicioObj);
