@@ -2,7 +2,7 @@ import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService from '@/src/services/MockDataService';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
+import { Alert, Text as RNText, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, Modal, Paragraph, Portal, SegmentedButtons, Text, TextInput, Title } from 'react-native-paper';
 
 interface RegistroPontoAprovacao {
@@ -692,83 +692,121 @@ export default function AprovarPontosScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
+    minHeight: '100%',
+    backgroundColor: '#f8f9fa',
+    paddingBottom: 20,
+    paddingTop: 10,
+    paddingHorizontal: 10,
+    width: '100%',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
   header: {
     padding: 20,
+    minHeight: 60,
   },
   summaryCard: {
     margin: 16,
     elevation: 2,
+    minHeight: 150,
   },
   sectionTitle: {
     fontSize: 18,
     marginBottom: 16,
     color: '#1976d2',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   summaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 20,
+    alignItems: 'center',
+    minHeight: 80,
   },
   summaryItem: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
   },
   summaryNumber: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1976d2',
+    textAlign: 'center',
+    writingDirection: 'ltr',
   },
   summaryLabel: {
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+    textAlign: 'center',
+    writingDirection: 'ltr',
   },
   approveAllButton: {
     marginTop: 8,
+    minHeight: 40,
   },
   filterCard: {
     margin: 16,
     marginTop: 0,
     elevation: 2,
+    minHeight: 200,
   },
   filtersContainer: {
     gap: 16,
+    flex: 1,
   },
   filterRow: {
     gap: 8,
+    minHeight: 40,
   },
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#666',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   segmentedButtons: {
     marginTop: 8,
+    minHeight: 40,
   },
   searchInput: {
     backgroundColor: '#fff',
+    minHeight: 40,
   },
   recordsCard: {
     margin: 16,
     marginTop: 0,
     elevation: 2,
+    minHeight: 200,
   },
   colaboradorNome: {
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   emptyState: {
     padding: 40,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 100,
   },
   emptyText: {
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
+    writingDirection: 'ltr',
   },
   // Modal styles
   modalContainer: {
@@ -776,91 +814,127 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 8,
     padding: 0,
+    minHeight: 300,
   },
   modalContent: {
     padding: 24,
+    flex: 1,
   },
   modalTitle: {
     fontSize: 20,
     marginBottom: 20,
     textAlign: 'center',
+    writingDirection: 'ltr',
   },
   registroInfo: {
     marginBottom: 20,
     padding: 16,
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
+    minHeight: 100,
   },
   infoLabel: {
     fontSize: 12,
     color: '#666',
     marginTop: 8,
     marginBottom: 2,
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
     color: '#333',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   observacoesInput: {
     backgroundColor: '#fff',
     marginBottom: 20,
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
+    alignItems: 'center',
   },
   modalButton: {
     flex: 1,
+    minHeight: 40,
   },
   rejectButton: {
     borderColor: '#f44336',
+    minHeight: 40,
   },
   // Estilos para visualização agrupada
   groupedView: {
     padding: 16,
+    flex: 1,
+    width: '100%',
   },
   funcionarioCard: {
     marginBottom: 16,
     elevation: 2,
+    minHeight: 200,
+    width: '100%',
   },
   funcionarioHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    gap: 12,
   },
   funcionarioInfo: {
-    flex: 1,
+    width: '100%',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
   funcionarioNome: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1976d2',
     marginBottom: 4,
+    textAlign: 'left',
+    writingDirection: 'ltr',
+    width: '100%',
   },
   funcionarioCargo: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'left',
+    writingDirection: 'ltr',
+    width: '100%',
   },
   funcionarioStats: {
     flexDirection: 'row',
     gap: 8,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    width: '100%',
+    marginTop: 8,
   },
   statChip: {
     height: 28,
+    minWidth: 100,
+    maxWidth: 120,
+    flexShrink: 0,
   },
   chipText: {
     fontSize: 12,
     fontWeight: '500',
+    textAlign: 'center',
+    writingDirection: 'ltr',
+    paddingHorizontal: 4,
   },
   emptyCard: {
     margin: 16,
     elevation: 1,
+    minHeight: 100,
   },
   // Estilos para layout de cards
   registroCard: {
@@ -871,77 +945,106 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
     elevation: 1,
+    minHeight: 120,
   },
   registroHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
+    minHeight: 40,
   },
   colaboradorInfo: {
     flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
   registroInfo: {
     alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    minWidth: 80,
   },
   registroMiddle: {
     marginBottom: 12,
     alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
   registroFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: 32,
   },
   colaboradorNome: {
     fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   colaboradorCargo: {
     fontSize: 12,
     color: '#666',
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   registroData: {
     fontSize: 13,
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
+    textAlign: 'right',
+    writingDirection: 'ltr',
   },
   registroHora: {
     fontSize: 12,
     color: '#666',
+    textAlign: 'right',
+    writingDirection: 'ltr',
   },
   tipoChip: {
     height: 28,
+    minWidth: 100,
   },
   tipoChipText: {
     fontSize: 11,
     fontWeight: '600',
+    textAlign: 'center',
+    writingDirection: 'ltr',
   },
   statusChip: {
     height: 28,
+    minWidth: 80,
   },
   statusChipText: {
     fontSize: 11,
     fontWeight: '600',
+    textAlign: 'center',
+    writingDirection: 'ltr',
   },
   reviewButton: {
     minWidth: 80,
+    height: 32,
   },
   approvedInfo: {
     alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    minWidth: 80,
   },
   aprovadoPor: {
     fontSize: 11,
     color: '#666',
     fontWeight: '500',
     marginBottom: 2,
+    textAlign: 'right',
+    writingDirection: 'ltr',
   },
   dataAprovacao: {
     fontSize: 10,
     color: '#999',
     fontStyle: 'italic',
+    textAlign: 'right',
+    writingDirection: 'ltr',
   },
 });
