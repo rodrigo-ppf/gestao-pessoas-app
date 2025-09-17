@@ -2,7 +2,7 @@ import MainLayout from '@/components/MainLayout';
 import { useAuth } from '@/src/contexts/AuthContext';
 import MockDataService from '@/src/services/MockDataService';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
 import { Button, Card, Chip, Modal, Paragraph, Portal, SegmentedButtons, Text, TextInput, Title } from 'react-native-paper';
 
 interface RegistroPontoAprovacao {
@@ -418,32 +418,12 @@ export default function AprovarPontosScreen() {
                 <Card.Content>
                   <View style={styles.funcionarioHeader}>
                     <View style={styles.funcionarioInfo}>
-                      <Text 
-                        style={[
-                          styles.funcionarioNome,
-                          {
-                            writingMode: 'horizontal-tb',
-                            textOrientation: 'mixed',
-                            direction: 'ltr',
-                            unicodeBidi: 'normal'
-                          }
-                        ]}
-                      >
+                      <RNText style={styles.funcionarioNome}>
                         {grupo.funcionarioNome}
-                      </Text>
-                      <Text 
-                        style={[
-                          styles.funcionarioCargo,
-                          {
-                            writingMode: 'horizontal-tb',
-                            textOrientation: 'mixed',
-                            direction: 'ltr',
-                            unicodeBidi: 'normal'
-                          }
-                        ]}
-                      >
+                      </RNText>
+                      <RNText style={styles.funcionarioCargo}>
                         {grupo.funcionarioCargo}
-                      </Text>
+                      </RNText>
                     </View>
                     <View style={styles.funcionarioStats}>
                       <Chip 
@@ -551,32 +531,12 @@ export default function AprovarPontosScreen() {
                 <View key={registro.id} style={styles.registroCard}>
                   <View style={styles.registroHeader}>
                     <View style={styles.colaboradorInfo}>
-                      <Text 
-                        style={[
-                          styles.colaboradorNome,
-                          {
-                            writingMode: 'horizontal-tb',
-                            textOrientation: 'mixed',
-                            direction: 'ltr',
-                            unicodeBidi: 'normal'
-                          }
-                        ]}
-                      >
+                      <RNText style={styles.colaboradorNome}>
                         {registro.colaboradorNome}
-                      </Text>
-                      <Text 
-                        style={[
-                          styles.colaboradorCargo,
-                          {
-                            writingMode: 'horizontal-tb',
-                            textOrientation: 'mixed',
-                            direction: 'ltr',
-                            unicodeBidi: 'normal'
-                          }
-                        ]}
-                      >
+                      </RNText>
+                      <RNText style={styles.colaboradorCargo}>
                         {registro.colaboradorCargo}
-                      </Text>
+                      </RNText>
                     </View>
                     
                     <View style={styles.registroInfo}>
