@@ -534,7 +534,7 @@ export default function AprovarPontosScreen() {
                       <RNText style={styles.colaboradorNome}>
                         {registro.colaboradorNome}
                       </RNText>
-                      <RNText style={styles.colaboradorCargo}>
+                      <RNText style={styles.modalColaboradorCargo}>
                         {registro.colaboradorCargo}
                       </RNText>
                     </View>
@@ -980,12 +980,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
-    textAlign: 'left',
-    writingDirection: 'ltr',
-  },
-  modalColaboradorCargo: {
-    fontSize: 12,
-    color: '#666',
     textAlign: 'left',
     writingDirection: 'ltr',
   },
