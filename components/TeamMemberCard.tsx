@@ -36,7 +36,7 @@ export default function TeamMemberCard({
   const handleEdit = () => {
     setMenuVisible(false);
     if (member.perfil === 'lider') {
-      router.push(`/editar-lider?id=${member.id}` as any);
+      router.push(`/(colaboradores)/editar-lider?gestorId=${member.id}` as any);
     } else {
       router.push(`/editar-funcionario?id=${member.id}` as any);
     }

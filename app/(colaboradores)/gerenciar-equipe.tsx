@@ -161,7 +161,7 @@ export default function GerenciarEquipeScreen() {
 
   const handleEditarGestor = (gestor: any) => {
     setMenuVisible(null);
-    router.push(`/editar-gestor?gestorId=${gestor.id}`);
+    router.push(`/(colaboradores)/editar-lider?gestorId=${gestor.id}`);
   };
 
   const handleExcluirGestor = (gestor: any) => {
@@ -372,7 +372,7 @@ export default function GerenciarEquipeScreen() {
               </Paragraph>
               <Button
                 mode="contained"
-                onPress={() => router.push('/cadastro-gestor')}
+                onPress={() => router.push('/(colaboradores)/cadastro-lider')}
                 style={styles.actionButton}
                 icon="account-plus"
               >

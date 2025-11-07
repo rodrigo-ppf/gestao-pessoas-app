@@ -8,26 +8,26 @@ import MockDataService from '@/src/services/MockDataService';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-    Alert,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import {
-    ActivityIndicator,
-    Button,
-    Card,
-    Chip,
-    HelperText,
-    Paragraph,
-    Surface,
-    Text,
-    TextInput,
-    Title
+  ActivityIndicator,
+  Button,
+  Card,
+  Chip,
+  HelperText,
+  Paragraph,
+  Surface,
+  Text,
+  TextInput,
+  Title
 } from 'react-native-paper';
 
 export default function LoginScreen() {
@@ -38,6 +38,7 @@ export default function LoginScreen() {
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showDeveloperMenu, setShowDeveloperMenu] = useState(false);
+  const [generalError, setGeneralError] = useState('');
   const [errors, setErrors] = useState({ email: '', senha: '' });
   const { login } = useAuth();
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ export default function LoginScreen() {
   // Validação de campos
   const validateForm = () => {
     const newErrors = { email: '', senha: '' };
+    setGeneralError('');
     
     if (!email.trim()) {
       newErrors.email = t('auth.emailRequired');
@@ -75,6 +77,9 @@ export default function LoginScreen() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+    if (generalError) {
+      setGeneralError('');
+    }
   };
 
   const handleLogin = async () => {
@@ -83,6 +88,7 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
+    setGeneralError('');
     
     try {
       console.log('Tentando fazer login com:', email);
@@ -90,6 +96,7 @@ export default function LoginScreen() {
       console.log('Resultado do login:', success);
       if (success) {
         console.log('Login bem-sucedido');
+        setGeneralError('');
         
         // Verificar se o email tem acesso a múltiplas empresas como responsável
         const hasMultiple = MockDataService.hasMultipleEmpresas(email);
@@ -105,11 +112,17 @@ export default function LoginScreen() {
           }, 100);
         }
       } else {
-        Alert.alert(t('common.error'), t('auth.invalidCredentials'));
+        setGeneralError('Email ou senha inválidos. Verifique suas credenciais.');
+        if (Platform.OS !== 'web') {
+          Alert.alert(t('common.error'), t('auth.invalidCredentials'));
+        }
       }
     } catch (error) {
       console.error('Erro no login:', error);
-      Alert.alert(t('common.error'), t('auth.loginError'));
+      setGeneralError('Não foi possível realizar o login. Tente novamente.');
+      if (Platform.OS !== 'web') {
+        Alert.alert(t('common.error'), t('auth.loginError'));
+      }
     } finally {
       setLoading(false);
     }
@@ -148,51 +161,72 @@ export default function LoginScreen() {
 
   const handleClearData = () => {
     Alert.alert(
-      'Limpar Dados',
-      'Esta ação irá apagar TODOS os dados do sistema (empresas, usuários, tarefas, pontos, etc.) e restaurar os dados padrão. Esta ação não pode ser desfeita.\n\nDeseja continuar?',
+      'Limpar Todos os Dados',
+      'Esta ação irá apagar TODOS os dados do sistema (empresas, usuários, tarefas, pontos, férias, etc.) SEM restaurar dados padrão.\n\nO sistema ficará completamente vazio para você começar testes e2e do zero.\n\nEsta ação não pode ser desfeita.\n\nDeseja continuar?',
       [
         {
           text: 'Cancelar',
           style: 'cancel',
         },
         {
-          text: 'Limpar Dados',
+          text: 'Limpar Tudo',
           style: 'destructive',
           onPress: async () => {
             try {
               setLoading(true);
-              console.log('Iniciando limpeza de dados...');
+              console.log('=== INICIANDO LIMPEZA COMPLETA DE DADOS ===');
               
-              // Limpar localStorage e sessionStorage
+              // Limpar localStorage e sessionStorage completamente
               if (typeof window !== 'undefined') {
-                console.log('Limpando localStorage e sessionStorage...');
+                console.log('1. Limpando localStorage e sessionStorage...');
                 localStorage.clear();
                 sessionStorage.clear();
-                console.log('LocalStorage e sessionStorage limpos');
+                console.log('✅ LocalStorage e sessionStorage limpos');
               }
               
-              // Limpar dados do MockDataService
-              await MockDataService.resetData();
-              console.log('Limpeza de dados concluída');
+              // Limpar TODOS os dados do MockDataService (sem criar dados padrão)
+              console.log('2. Limpando dados do MockDataService...');
+              await MockDataService.clearAllData();
+              console.log('✅ MockDataService limpo completamente');
               
-              // Forçar recarga dos dados
-              console.log('Forçando recarga dos dados...');
-              await MockDataService.initializeDefaultData();
-              console.log('Recarga concluída');
+              // Verificar que tudo foi limpo
+              const empresas = MockDataService.getEmpresas();
+              const usuarios = MockDataService.getUsuarios();
+              const tarefas = MockDataService.getTarefas();
+              const colaboradores = MockDataService.getColaboradores();
+              const gestores = MockDataService.getGestores();
               
-              // Verificar dados após limpeza
-              const usuarios = await MockDataService.getUsuarios();
-              console.log('Usuários após limpeza:', usuarios.length);
-              console.log('Usuários:', usuarios.map(u => ({ nome: u.nome, email: u.email })));
+              console.log('=== VERIFICAÇÃO PÓS-LIMPEZA ===');
+              console.log('Empresas:', empresas.length);
+              console.log('Usuários:', usuarios.length);
+              console.log('Tarefas:', tarefas.length);
+              console.log('Colaboradores:', colaboradores.length);
+              console.log('Gestores:', gestores.length);
               
-              Alert.alert(
-                'Sucesso', 
-                'Todos os dados foram limpos e o sistema foi restaurado aos dados padrão.\n\n• Dados do sistema limpos\n• LocalStorage limpo\n• SessionStorage limpo\n• Dados padrão restaurados',
-                [{ text: 'OK' }]
-              );
+              if (empresas.length === 0 && usuarios.length === 0 && tarefas.length === 0) {
+                Alert.alert(
+                  '✅ Limpeza Completa!', 
+                  'Todos os dados foram removidos com sucesso!\n\n• Empresas: 0\n• Usuários: 0\n• Tarefas: 0\n• Colaboradores: 0\n• Gestores: 0\n• Pontos: 0\n• Férias: 0\n\nO sistema está pronto para testes e2e do zero.',
+                  [{ 
+                    text: 'OK',
+                    onPress: () => {
+                      // Recarregar a página para garantir que tudo está limpo
+                      if (typeof window !== 'undefined') {
+                        window.location.reload();
+                      }
+                    }
+                  }]
+                );
+              } else {
+                Alert.alert(
+                  '⚠️ Atenção', 
+                  `Alguns dados ainda podem estar presentes:\n\n• Empresas: ${empresas.length}\n• Usuários: ${usuarios.length}\n• Tarefas: ${tarefas.length}\n\nVerifique o console para mais detalhes.`,
+                  [{ text: 'OK' }]
+                );
+              }
             } catch (error) {
-              console.error('Erro ao limpar dados:', error);
-              Alert.alert('Erro', 'Não foi possível limpar os dados do sistema.');
+              console.error('❌ Erro ao limpar dados:', error);
+              Alert.alert('Erro', 'Não foi possível limpar todos os dados do sistema. Verifique o console para mais detalhes.');
             } finally {
               setLoading(false);
             }
@@ -328,6 +362,15 @@ export default function LoginScreen() {
                     'Entrar no Sistema'
                   )}
                 </Button>
+              {generalError ? (
+                <Paragraph
+                  data-testid="login-error"
+                  style={styles.generalError}
+                  accessibilityRole={Platform.OS === 'web' ? 'alert' : undefined}
+                >
+                  {generalError}
+                </Paragraph>
+              ) : null}
               </View>
             </Surface>
 
@@ -548,6 +591,12 @@ const styles = StyleSheet.create({
     minHeight: 56,
     borderRadius: DesignSystem.borderRadius.lg,
     backgroundColor: DesignSystem.colors.primary,
+  },
+  generalError: {
+    marginTop: DesignSystem.spacing.sm,
+    color: DesignSystem.colors.error,
+    textAlign: 'center',
+    fontWeight: DesignSystem.typography.fontWeight.medium,
   },
   buttonContent: {
     minHeight: 56,

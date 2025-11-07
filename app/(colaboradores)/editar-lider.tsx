@@ -11,7 +11,13 @@ import { Avatar, Button, Card, Chip, Divider, List, Paragraph, TextInput, Title 
 export default function EditarGestorScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { gestorId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  // Expo Router pode retornar arrays, então pegamos o primeiro valor
+  // Aceita gestorId, liderId ou id para compatibilidade
+  const gestorId = 
+    (Array.isArray(params.gestorId) ? params.gestorId[0] : params.gestorId) ||
+    (Array.isArray(params.liderId) ? params.liderId[0] : params.liderId) ||
+    (Array.isArray(params.id) ? params.id[0] : params.id);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -25,15 +31,22 @@ export default function EditarGestorScreen() {
 
   useEffect(() => {
     carregarDados();
-  }, [gestorId]);
+  }, [gestorId, user?.empresaId]);
 
   useEffect(() => {
     checkForChanges();
   }, [nome, email, departamento, cargo, senha, confirmarSenha, gestor]);
 
   const carregarDados = () => {
+    console.log('EditarGestor: Carregando dados...');
+    console.log('EditarGestor: gestorId recebido:', gestorId);
+    console.log('EditarGestor: user?.empresaId:', user?.empresaId);
+    
     if (gestorId && user?.empresaId) {
-      const gestorEncontrado = MockDataService.getUsuarioById(gestorId as string);
+      const gestorIdString = gestorId as string;
+      const gestorEncontrado = MockDataService.getUsuarioById(gestorIdString);
+      console.log('EditarGestor: gestorEncontrado:', gestorEncontrado);
+      
       if (gestorEncontrado) {
         setGestor(gestorEncontrado);
         setNome(gestorEncontrado.nome);
@@ -43,9 +56,19 @@ export default function EditarGestorScreen() {
         
         // Carregar funcionários do gestor
         const usuarios = MockDataService.getUsuariosByEmpresa(user.empresaId);
-        const funcionariosDoGestor = usuarios.filter(u => u.perfil === 'funcionario' && u.gestorId === gestorId);
+        const funcionariosDoGestor = usuarios.filter(u => u.perfil === 'funcionario' && u.gestorId === gestorIdString);
         setFuncionarios(funcionariosDoGestor);
+        console.log('EditarGestor: funcionários do gestor:', funcionariosDoGestor.length);
+      } else {
+        console.error('EditarGestor: Gestor não encontrado com ID:', gestorIdString);
+        Alert.alert('Erro', 'Gestor não encontrado. Redirecionando...', [
+          { text: 'OK', onPress: () => router.push('/gerenciar-equipe') }
+        ]);
       }
+    } else {
+      console.warn('EditarGestor: gestorId ou empresaId não disponível');
+      console.warn('EditarGestor: gestorId:', gestorId);
+      console.warn('EditarGestor: user?.empresaId:', user?.empresaId);
     }
   };
 
@@ -75,11 +98,19 @@ export default function EditarGestorScreen() {
         dadosAtualizados.senha = senha;
       }
 
-      // Simular operação de salvamento (substituir pela implementação real)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Atualizar no MockDataService
+      const gestorIdString = Array.isArray(gestorId) ? gestorId[0] : gestorId;
+      if (!gestorIdString) {
+        throw new Error('ID do gestor não encontrado');
+      }
       
-      // TODO: Implementar atualização no banco de dados real
-      // const gestorAtualizado = await MockDataService.updateUsuario(gestorId as string, dadosAtualizados);
+      await MockDataService.updateUsuario(gestorIdString, dadosAtualizados);
+      
+      // Atualizar o estado local do gestor
+      const gestorAtualizado = MockDataService.getUsuarioById(gestorIdString);
+      if (gestorAtualizado) {
+        setGestor(gestorAtualizado);
+      }
       
       setHasChanges(false);
       

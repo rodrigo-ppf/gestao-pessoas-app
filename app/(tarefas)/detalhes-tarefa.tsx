@@ -1,4 +1,5 @@
 import MainLayout from '@/components/MainLayout';
+import TaskHistory from '@/components/TaskHistory';
 import UniversalIcon from '@/components/UniversalIcon';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -165,6 +166,13 @@ export default function DetalhesTarefaScreen() {
                 </Paragraph>
               )}
             </View>
+          </Card.Content>
+        </Card>
+
+        {/* Histórico de Alterações */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <TaskHistory tarefaId={tarefaId as string} />
           </Card.Content>
         </Card>
 

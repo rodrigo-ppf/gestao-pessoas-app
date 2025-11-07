@@ -11,7 +11,16 @@
     "lint": "expo lint",
     "build:web": "expo export --platform web",
     "build:production": "expo export --platform web --clear",
-    "build:app-engine": "./scripts/build-web.sh"
+    "build:app-engine": "./scripts/build-web.sh",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:auto": "playwright test --project=chromium",
+    "test:e2e:full": "npm run build:web && playwright test --project=chromium",
+    "test": "npm run test:e2e:auto",
+    "postbuild:web": "echo 'Build concluído. Execute npm test para rodar os testes.'"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -56,6 +65,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@playwright/test": "^1.56.1",
     "@types/react": "~19.1.0",
     "@types/react-native": "~0.73.0",
     "@typescript-eslint/eslint-plugin": "^8.15.0",

@@ -52,19 +52,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       console.log('AuthContext: Verificando estado de autenticação...');
       let userId;
+      let empresaId;
+      
       if (isWeb) {
         // No web, usar localStorage diretamente
         userId = localStorage.getItem('userId');
+        empresaId = localStorage.getItem('empresaId');
       } else {
         // No mobile, usar StorageService
         userId = await StorageService.getItem('userId');
+        empresaId = await StorageService.getItem('empresaId');
       }
       console.log('AuthContext: userId do Storage:', userId);
+      console.log('AuthContext: empresaId do Storage:', empresaId);
       
       if (userId) {
         const userData = MockDataService.getUsuarioById(userId);
         console.log('AuthContext: userData encontrado:', userData);
         if (userData) {
+          // Se há empresaId no storage e o usuário não tem empresaId ou está diferente, atualizar
+          if (empresaId && empresaId !== userData.empresaId) {
+            console.log('AuthContext: Atualizando empresaId do usuário:', empresaId);
+            // Atualizar no MockDataService também para manter consistência
+            await MockDataService.updateUsuario(userId, { empresaId });
+            userData.empresaId = empresaId;
+          }
+          // Se o usuário não tem empresaId mas deveria ter (dono_empresa, gestor, funcionario)
+          else if (!userData.empresaId && empresaId && 
+                   (userData.perfil === 'dono_empresa' || userData.perfil === 'gestor' || userData.perfil === 'funcionario')) {
+            console.log('AuthContext: Definindo empresaId do usuário do storage:', empresaId);
+            await MockDataService.updateUsuario(userId, { empresaId });
+            userData.empresaId = empresaId;
+          }
           setUser(userData);
           console.log('AuthContext: Usuário definido no estado:', userData);
         } else {

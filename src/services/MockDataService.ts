@@ -166,25 +166,34 @@ class MockDataService {
     return MockDataService.instance;
   }
 
-  // Inicializar dados padrão
+  // Inicializar dados padrão (só cria se não existir nada)
   public async initializeDefaultData(): Promise<void> {
     try {
       console.log('MockDataService: Inicializando dados padrão...');
-      const hasData = await AsyncStorage.getItem('mockDataInitialized');
-      console.log('MockDataService: hasData:', hasData);
       
-      if (!hasData) {
-        console.log('MockDataService: Criando dados padrão...');
+      // Verificar se há dados no storage
+      const empresasData = await getStorageItem('empresas');
+      const usuariosData = await getStorageItem('usuarios');
+      const hasData = await getStorageItem('mockDataInitialized');
+      
+      console.log('MockDataService: Verificando dados existentes...');
+      console.log('MockDataService: hasData flag:', hasData);
+      console.log('MockDataService: empresasData existe:', !!empresasData);
+      console.log('MockDataService: usuariosData existe:', !!usuariosData);
+      
+      // Se não há dados e não foi explicitamente marcado como limpo, criar dados padrão
+      if (!hasData && !empresasData && !usuariosData) {
+        console.log('MockDataService: Nenhum dado encontrado, criando dados padrão...');
         await this.createDefaultData();
-        await AsyncStorage.setItem('mockDataInitialized', 'true');
+        await setStorageItem('mockDataInitialized', 'true');
         console.log('MockDataService: Dados padrão criados');
-      } else {
+      } else if (hasData || empresasData || usuariosData) {
         console.log('MockDataService: Dados já existem, carregando...');
         await this.loadData();
         
-        // Verificar se o usuário dono_empresa existe
+        // Verificar se o usuário dono_empresa existe (apenas se houver dados)
         const donoEmpresa = this.usuarios.find(u => u.perfil === 'dono_empresa');
-        if (!donoEmpresa) {
+        if (!donoEmpresa && this.usuarios.length > 0) {
           console.log('MockDataService: Usuário dono_empresa não encontrado, adicionando...');
           const novoDonoEmpresa: Usuario = {
             id: '2',
@@ -203,6 +212,14 @@ class MockDataService {
           await this.saveData();
           console.log('MockDataService: Usuário dono_empresa adicionado');
         }
+      } else {
+        console.log('MockDataService: Sistema limpo - não criando dados padrão');
+        // Garantir que os arrays estão vazios
+        this.empresas = [];
+        this.usuarios = [];
+        this.tarefas = [];
+        this.pontos = [];
+        this.ferias = [];
       }
       
       await this.loadData();
@@ -395,6 +412,13 @@ class MockDataService {
     console.log('=== MOCKDATA: CRIANDO USUÁRIO ===');
     console.log('Dados recebidos:', usuario);
     
+    // Validar empresaId - não pode ser vazio para gestores e funcionários
+    if ((usuario.perfil === 'gestor' || usuario.perfil === 'funcionario' || usuario.perfil === 'dono_empresa') && !usuario.empresaId) {
+      const error = new Error('empresaId é obrigatório para este perfil de usuário');
+      console.error('Erro ao criar usuário:', error);
+      throw error;
+    }
+    
     const novoUsuario: Usuario = {
       ...usuario,
       id: Date.now().toString(),
@@ -417,6 +441,11 @@ class MockDataService {
 
   public getUsuarios(): Usuario[] {
     return this.usuarios.filter(u => u.ativo);
+  }
+
+  // Método para retornar TODOS os usuários (incluindo inativos) - útil para debug
+  public getAllUsuarios(): Usuario[] {
+    return [...this.usuarios];
   }
 
   public getUsuariosByEmpresa(empresaId: string): Usuario[] {
@@ -866,7 +895,45 @@ class MockDataService {
     return empresas.length > 1;
   }
 
-  // Método para resetar dados (para testes)
+  // Método para limpar TODOS os dados sem criar dados padrão (para testes e2e)
+  public async clearAllData(): Promise<void> {
+    console.log('MockDataService: Iniciando limpeza completa de dados...');
+    
+    // Limpar storage de forma compatível com web e mobile
+    await clearAllStorage();
+    console.log('MockDataService: Storage limpo');
+    
+    // Limpar arrays em memória
+    this.empresas = [];
+    this.usuarios = [];
+    this.tarefas = [];
+    this.historicoTarefas = [];
+    this.observacoesTarefas = [];
+    this.pontos = [];
+    this.ferias = [];
+    console.log('MockDataService: Arrays em memória limpos');
+    
+    // Limpar também dados específicos do webInit se existirem
+    if (isWeb && typeof window !== 'undefined') {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('mockDataInitialized');
+      localStorage.removeItem('solicitacoesFerias');
+      console.log('MockDataService: Dados específicos do web limpos');
+    }
+    
+    // Aguardar um pouco para garantir que o storage foi limpo
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    console.log('MockDataService: Limpeza completa concluída - SEM dados padrão');
+    console.log('MockDataService: Estado final:');
+    console.log('- Empresas:', this.empresas.length);
+    console.log('- Usuários:', this.usuarios.length);
+    console.log('- Tarefas:', this.tarefas.length);
+    console.log('- Pontos:', this.pontos.length);
+    console.log('- Férias:', this.ferias.length);
+  }
+
+  // Método para resetar dados (para testes) - mantém dados padrão
   public async resetData(): Promise<void> {
     console.log('MockDataService: Iniciando reset de dados...');
     

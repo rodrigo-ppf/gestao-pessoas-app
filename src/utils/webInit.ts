@@ -47,7 +47,7 @@ export const initializeWebData = () => {
       id: 'usuario-1',
       nome: 'Admin Sistema',
       email: 'admin@sistema.com',
-      senha: '123456',
+      senha: 'admin123',
       perfil: 'admin_sistema' as const,
       empresaId: 'empresa-1',
       departamento: 'TI',
